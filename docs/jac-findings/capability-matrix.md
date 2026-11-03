@@ -6,7 +6,7 @@ Each row is a Jac capability Briefly exercises (architecture §21.3). Each compi
 |---|---|---|---|---|---|
 | Scaffolding (`jac create`) | S0 | Template builds, passes `jac check` and lint, sensible defaults | JI-009 | Works | JI-009 no longer holds: the `--kind desktop` scaffold is lint-clean and formatted |
 | Client UI (JSX components, state, routing) | All screens, desktop and phone | Compile errors, runtime behaviour, hot reload, stale compiled cache | Stale prepared cache note | Works | |
-| Native desktop host and window SDK | Desktop window | Size, fullscreen, always-on-top, second window, focus, close/restore, global shortcuts, capture exclusion | Guide documents only title/size/fullscreen/terminate | Not yet exercised | |
+| Native desktop host and window SDK | Desktop window | Size, fullscreen, always-on-top, second window, focus, close/restore, global shortcuts, capture exclusion | Guide documents only title/size/fullscreen/terminate | Works | [JD-003](JD-003-desktop-identifier-gets-another-apps-name.md); window opens and renders (0.3); window SDK not yet exercised (1.3) |
 | Desktop SDK (dialogs, backend selection) | Export, onboarding | Positional-argument rule, error messages | Upstream #6675 | Not yet exercised | |
 | Server endpoints (`walker:pub`, `def:pub`) | Every command (§11.3) | Auth, input validation, error shapes, binary/text serialisation | JI-033 | Works | |
 | Graph persistence and walkers | Evidence model (§8), sessions | Correctness, transactions, schema evolution during development, memory, startup | JI-042 | Not yet exercised | |
@@ -17,6 +17,6 @@ Each row is a Jac capability Briefly exercises (architecture §21.3). Each compi
 | Several clients of one app | Desktop window plus phone | Per-client auth, LAN binding configuration | | Not yet exercised | |
 | Test runner (`jac test`) | Unit, integration, canaries | Strict mode, fixtures, async tests, CI exit codes | JI-001 | Works with workaround | [JD-002](JD-002-test-client-nested-entry.md) |
 | Tooling (`jac check`, `jac fmt`, `jac browse`, editor support) | Daily development | Diagnostic quality, formatter safety, browser QA on the desktop UI | `--lintfix` mangling note, JI-045 | Not yet exercised | |
-| Build and packaging (`jac build`) | S1, clean VM, every phase | Privilege prompts, CPU requirements, artifact size, launcher, offline start | JI-002, JI-005 | Not yet exercised | |
+| Build and packaging (`jac build`) | S1, clean VM, every phase | Privilege prompts, CPU requirements, artifact size, launcher, offline start | JI-002, JI-005 | Works with workaround | [JD-001](JD-001-jac-bun-is-ignored.md); JI-005 still holds: the desktop build needs `sudo apt-get install pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev` (re-tested formally in 1.1) |
 | Bundled guides | Every phase | Each guide claim used by the project is checked against behaviour | | Not yet exercised | |
 | Upgrades | Every new release | Breaking changes, migration of graph data, cache invalidation | | Not yet exercised | |
