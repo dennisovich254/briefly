@@ -124,10 +124,10 @@ Legend: **T** = tests written first (RED), **I** = implementation, **✓** = exi
 
 ### Phase 0 — Toolchain, scaffold, quality gates (about 3–4 days)
 
-- [ ] **0.1 Toolchain doctor and compiler pin**
-  - **I:** `.jac-version` = `0.39.0`. `scripts/install_jac.sh` downloads `jac-<version>-linux-x86_64` from the `jaseci-labs/jaseci` release and **requires** its `.sha256` (adapted from AfriCinemas; `jac update --self` does not work for this install). `scripts/doctor.sh` checks the pinned Jac version, `git`, `gh`, `pre-commit` and `gitleaks`, and exits non-zero on any miss.
-  - **T:** `scripts/doctor.sh` fails with a wrong `.jac-version`, then passes with the right one.
-  - **✓** `scripts/doctor.sh` exits 0 on the owner's laptop.
+- [x] **0.1 Toolchain doctor and compiler pin**
+  - **I:** `.jac-version` = `0.39.0`. `scripts/install_jac.sh` downloads `jac-<version>-linux-x86_64` from the `jaseci-labs/jaseci` release and **requires** its `.sha256` (adapted from AfriCinemas; `jac update --self` does not work for this install). Unlike the AfriCinemas script, it checks the downloaded binary's version *before* replacing the installed one. `scripts/doctor.sh` checks the pinned Jac version, that the bun Jac uses runs on this CPU (the owner's Celeron N4020 has no AVX2, so `JAC_BUN` points at bun's baseline build: JI-002, re-tested in 1.1), Python, Git identity and remote, `.env` ignored, `pre-commit`, `gitleaks` and an authenticated `gh`. `.gitignore` added.
+  - **T:** `scripts/toolchain_selftest.sh` (11 checks, offline: releases served from a local directory through `JAC_RELEASE_BASE_URL`, a fake `jac` on PATH): installs on a matching checksum; refuses a mismatched or missing checksum or a binary reporting another version, and installs nothing then; the doctor passes on the pinned version and fails on a wrong or missing `.jac-version`. Mutation-checked: disabling the checksum comparison fails exactly the two checksum tests.
+  - **✓** `scripts/doctor.sh` exits 0 on the owner's laptop; a real-network install of 0.39.0 verifies its checksum.
 - [ ] **0.2 Findings log and capability matrix** (EV-01, §21.3, §21.4)
   - **I:** `docs/jac-findings/README.md` (index by severity, with status), `TEMPLATE.md` (the §21.4 entry template), `capability-matrix.md` (every §21.3 row, verdict column per compiler version, all "not yet exercised"), `reports/`. The `~/jac-repros/JD-NNN/` convention is documented in the README.
   - **T:** `scripts/check_findings.sh` checks that every `JD-*.md` has the required fields (version, found, category/severity, capability, status, cost) and a valid status; that every *open* finding marked testable has a matching `tests/canaries/jd_NNN_*` file; and that every matrix row is one of the §21.3 verdicts. It runs on a fixture finding (RED: missing fields fail) and on the real empty log (GREEN).
@@ -147,7 +147,7 @@ Legend: **T** = tests written first (RED), **I** = implementation, **✓** = exi
 - [ ] **0.6 GitHub Actions CI**
   - **I:** `.github/workflows/ci.yml` on PRs and pushes to `main`, `permissions: contents: read`, concurrency cancel-in-progress, every action pinned to a full commit SHA, Jac installed by `scripts/install_jac.sh`. Jobs: `pr-title`, `quality` (the pre-commit hooks), `test` (strict, canaries included), `build-desktop` (system packages for the WebKitGTK host cached; JI-005 re-tested), `build-lean`, `security` (gitleaks over history, dependency review). Docs-only PRs skip tests and builds.
   - **T:** the first PR's checks are the test; a deliberately failing commit on a scratch branch shows each required job fails.
-  - **✓** All checks green on the PR. **Owner:** set branch protection on `main` (PR required, required checks, linear history, squash only, no force-push, delete head branches).
+  - **✓** All checks green on the PR. **Branch protection:** once the job names are final, Claude shows the owner the exact ruleset and, after the owner approves, applies it with `gh api` (repository ruleset on `main`: PR required, the required checks, linear history, no force-push or deletion; repository settings: squash merges only, delete head branches). Verified by reading the ruleset back and by a direct push to `main` being refused.
 - [ ] **0.7 Repository governance files**
   - **I:** `CONTRIBUTING.md` (setup, the §2.1 loop, the Jac-first rule), `SECURITY.md`, `.github/PULL_REQUEST_TEMPLATE.md` (summary, findings touched, screenshots; the Definition of Done stays in this plan), `CODEOWNERS`, `.editorconfig`, `.env.example` (names only), `dependabot.yml` (GitHub Actions only).
   - **T:** `scripts/check_governance.sh`: files exist, `.env.example` names every variable used without values, `.env`, `.claude/` and `bench/private/` are git-ignored. Runs in the `quality` job.
@@ -350,7 +350,7 @@ Time spent diagnosing Jac problems is tracked in each finding's Cost field so th
 ## 7. Open items (decide by the sub-phase noted)
 
 - **Decided 2026-11-03:** the owner merges every PR; Claude opens PRs and never merges them.
-- **Before 0.6:** the owner sets branch protection on `main`.
+- **At the end of 0.6:** the owner approves the branch-protection ruleset Claude proposes (Claude applies it with `gh`).
 - **Before 1.2:** a clean Ubuntu 24.04 VM for install tests; an 8 GB+ VM for comparison numbers if available (§3.1).
 - **Before 1.4:** a Claude API key with a budget for spikes, and which models it can access.
 - **Before 1.6:** a consented test recording; which speech-to-text services to trial and keys for them.

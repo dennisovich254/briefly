@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Toolchain doctor for Briefly.
+# Verifies every tool the dev workflow depends on. Exits non-zero if any check fails.
+# Later sub-phases add their tools here (hooks in 0.5, actionlint in 0.6).
+# Usage: scripts/doctor.sh          (NO_COLOR=1 for plain output)
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT" || exit 1
+
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then GREEN=$'\e[32m'; RED=$'\e[31m'; DIM=$'\e[2m'; RESET=$'\e[0m'; else GREEN=""; RED=""; DIM=""; RESET=""; fi
+failures=0
+
+pass() { printf '%s  PASS%s  %s\n' "$GREEN" "$RESET" "$1"; }
+fail() { printf '%s  FAIL%s  %s\n' "$RED" "$RESET" "$1"; [[ -n "${2:-}" ]] && printf '        %sfix: %s%s\n' "$DIM" "$2" "$RESET"; failures=$((failures + 1)); }
+
+# 1. Jac installed at the pinned version (.jac-version is the single source of truth)
+pinned="$(tr -d '[:space:]' < .jac-version 2>/dev/null)"
+if [[ -z "$pinned" ]]; then
+    fail "pinned Jac version in .jac-version" "create .jac-version containing e.g. 0.39.0"
+elif ! command -v jac >/dev/null 2>&1; then
+    fail "jac on PATH" "scripts/install_jac.sh"
+else
+    # A fresh binary's first run prints extraction lines first; take only the "jac X.Y.Z" line.
+    actual="$(jac --version 2>/dev/null | grep -E '^jac [0-9]' | awk '{print $2}' | head -1)"
+    if [[ "$actual" == "$pinned" ]]; then pass "jac $actual (pinned $pinned)"
+    else fail "jac version $actual != pinned $pinned" "scripts/install_jac.sh, or bump .jac-version in a PR"; fi
+fi
+
+# 2. The bun that Jac uses for client builds runs on this CPU.
+#    Jac's bundled bun needs AVX2 (JI-002); CPUs without it (e.g. Celeron N4020) need bun's
+#    "baseline" build through JAC_BUN.
+if [[ -n "${JAC_BUN:-}" ]]; then
+    bun_bin="$JAC_BUN"; bun_src="JAC_BUN"
+else
+    bun_bin="$(ls -t "$HOME"/.cache/jac/rt/*/site/jaclang/client/_bun/bun 2>/dev/null | head -1)"; bun_src="bundled"
+fi
+if [[ -z "$bun_bin" ]]; then
+    fail "no bun found for Jac client builds" "run 'jac install' in a project once so Jac unpacks its bundled bun"
+elif bun_ver="$("$bun_bin" --version 2>/dev/null)"; then
+    pass "bun $bun_ver runs ($bun_src)"
+else
+    fail "bun ($bun_src: $bun_bin) does not run on this CPU" "install bun's baseline build (github.com/oven-sh/bun/releases: bun-linux-x64-baseline.zip) and export JAC_BUN=/path/to/bun"
+fi
+
+# 3. Python 3.10+ (pre-commit hooks)
+if python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
+    pass "python3 $(python3 -c 'import platform; print(platform.python_version())')"
+else
+    fail "python3 >= 3.10" "install Python 3.10 or newer"
+fi
+
+# 4. Git identity and remote
+name="$(git config user.name 2>/dev/null)"; email="$(git config user.email 2>/dev/null)"
+if [[ -n "$name" && -n "$email" ]]; then pass "git identity: $name <$email>"
+else fail "git user.name / user.email not set" "git config --global user.name 'Your Name' && git config --global user.email you@example.com"; fi
+
+if git remote get-url origin >/dev/null 2>&1; then pass "git remote origin: $(git remote get-url origin)"
+else fail "git remote 'origin' missing" "git remote add origin https://github.com/<owner>/briefly.git"; fi
+
+# 5. Secrets file is never committable
+if [[ ! -e .env ]] || git check-ignore -q .env; then pass ".env is git-ignored"
+else fail ".env exists but is NOT git-ignored" "add .env to .gitignore"; fi
+
+# 6. pre-commit and gitleaks (the hooks arrive in 0.5)
+if command -v pre-commit >/dev/null 2>&1; then pass "pre-commit $(pre-commit --version | awk '{print $2}')"
+else fail "pre-commit not installed" "uv tool install pre-commit   (uv: github.com/astral-sh/uv/releases)"; fi
+
+if command -v gitleaks >/dev/null 2>&1; then pass "gitleaks $(gitleaks version 2>/dev/null)"
+else fail "gitleaks not installed" "download gitleaks_<ver>_linux_x64.tar.gz from github.com/gitleaks/gitleaks/releases, verify its checksum, copy gitleaks to ~/.local/bin"; fi
+
+# 7. GitHub CLI, authenticated (needed for PRs and pushing)
+if ! command -v gh >/dev/null 2>&1; then
+    fail "gh (GitHub CLI) not installed" "download gh_<ver>_linux_amd64.tar.gz from github.com/cli/cli/releases, verify its checksum, copy bin/gh to ~/.local/bin"
+elif gh auth status >/dev/null 2>&1; then
+    pass "gh $(gh --version | head -1 | awk '{print $3}') authenticated"
+else
+    fail "gh installed but not authenticated" "gh auth login && gh auth setup-git"
+fi
+
+echo
+if (( failures > 0 )); then
+    printf '%s%d check(s) failed.%s\n' "$RED" "$failures" "$RESET"
+    exit 1
+fi
+printf '%sAll checks passed.%s\n' "$GREEN" "$RESET"
