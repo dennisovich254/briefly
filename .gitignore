@@ -10,3 +10,13 @@ node_modules/
 
 # Measurement output that may name private repositories (only redacted results go in bench/results/)
 bench/private/
+
+# From the `jac create` scaffold
+packages/
+*.jbc
+*.jir
+*.py[cod]
+.venv/
+venv/
+*.session
+*.session.*

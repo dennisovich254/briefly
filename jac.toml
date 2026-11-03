@@ -1,0 +1,54 @@
+[project]
+name = "briefly"
+version = "0.1.0"
+description = "An AI standup assistant for Ubuntu, built in Jac."
+jac-version = "==0.39.0"
+default-app = "desktop"
+
+# Two run profiles over one codebase (architecture §6.1): the desktop profile is the
+# evaluation target, the lean profile the fallback for daily use.
+[apps.desktop]
+kind = "desktop"
+entry-point = "hosts.desktop.main"
+
+[apps.lean]
+kind = "web-app"
+entry-point = "main"   # at the root: JD-002
+
+# From the `jac create --kind desktop` scaffold.
+[dependencies.npm]
+react = "^19.2.0"
+react-dom = "^19.2.0"
+react-router-dom = "^6.22.0"
+react-error-boundary = "^5.0.0"
+"@tanstack/react-form" = "^1.33.0"
+zod = "^4.3.6"
+
+[dependencies.npm.dev]
+vite = "^6.4.1"
+"@vitejs/plugin-react" = "^4.7.0"
+typescript = "^5.3.3"
+"@types/react" = "^19.2.0"
+"@types/react-dom" = "^19.2.0"
+
+[dev-dependencies.pypi]
+watchdog = ">=3.0.0"
+
+[client.app_meta_data]
+title = "Briefly"
+description = "An AI standup assistant for Ubuntu."
+
+[test]
+directory = "tests"
+
+[desktop]
+name = "briefly"
+identifier = "io.github.dennisovich254.briefly"
+version = "0.1.0"
+
+[desktop.window]
+title = "Briefly"
+width = 900
+height = 640
+min_width = 480
+min_height = 360
