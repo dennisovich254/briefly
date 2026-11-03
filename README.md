@@ -6,4 +6,4 @@ Briefly prepares your standup from your Git and GitHub history, listens for ques
 
 The project has a second purpose: a rigorous evaluation of how well the Jac ecosystem builds real desktop apps, with every shortcoming documented.
 
-Status: design only. See [docs/architecture.md](docs/architecture.md).
+Status: design approved; implementation starting. See [docs/architecture.md](docs/architecture.md) and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
