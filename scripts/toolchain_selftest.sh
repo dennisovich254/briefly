@@ -53,14 +53,32 @@ make_release "$tmp/wrongver" "9.9.9" good
 check "refuses a binary that reports another version" refuses install_into "$tmp/wrongver" "$tmp/bin-wrongver"
 
 echo "doctor.sh"
+# A fake jac that reports the pinned version and answers the doctor's runtime probe with a fake
+# runtime, whose bundled bun either runs or crashes like an AVX2 build on an older CPU (exit 132).
+mkdir -p "$tmp/doctor-bin" "$tmp/rt/jaclang/client/_bun" "$tmp/other-bun"
+cat > "$tmp/doctor-bin/jac" <<EOF
+#!/usr/bin/env bash
+case "\$1" in
+    --version) echo "jac $pinned  (Linux x86_64)" ;;
+    run) echo "$tmp/rt/jaclang/__init__.py" ;;
+esac
+EOF
+printf '#!/usr/bin/env bash\necho 1.3.11\n' > "$tmp/other-bun/bun"
+chmod +x "$tmp/doctor-bin/jac" "$tmp/other-bun/bun"
+bundled_bun() {  # bundled_bun runs|crashes
+    if [[ "$1" == runs ]]; then printf '#!/usr/bin/env bash\necho 1.3.11\n'; else printf '#!/usr/bin/env bash\nexit 132\n'; fi > "$tmp/rt/jaclang/client/_bun/bun"
+    chmod +x "$tmp/rt/jaclang/client/_bun/bun"
+}
+
 # A throwaway repo holding only the doctor and a .jac-version, with the fake jac first on PATH.
 doctor_with() {  # doctor_with <.jac-version content>; prints the doctor's output
     local repo="$tmp/repo-$RANDOM"
     mkdir -p "$repo/scripts" && cp "$ROOT/scripts/doctor.sh" "$repo/scripts/"
     git -C "$repo" init -q
     [[ -n "$1" ]] && echo "$1" > "$repo/.jac-version"
-    PATH="$tmp/bin-good:$PATH" NO_COLOR=1 "$repo/scripts/doctor.sh" 2>&1
+    PATH="$tmp/doctor-bin:$PATH" NO_COLOR=1 "$repo/scripts/doctor.sh" 2>&1
 }
+bundled_bun runs
 out_ok="$(doctor_with "$pinned")"
 out_wrong="$(doctor_with "0.0.1")"
 out_none="$(doctor_with "")"
@@ -68,6 +86,10 @@ check "passes the Jac check when jac matches .jac-version" grep -q "PASS  jac $p
 check "fails the Jac check when jac differs from .jac-version" grep -q "FAIL  jac version $pinned != pinned 0.0.1" <<<"$out_wrong"
 check "fails when .jac-version is missing" grep -q "FAIL  pinned Jac version in .jac-version" <<<"$out_none"
 check "exits non-zero when a check fails" refuses doctor_with "0.0.1"
+check "passes the bun check when the runtime's bundled bun runs" grep -q "PASS  bun 1.3.11 runs (bundled in the active Jac runtime)" <<<"$out_ok"
+bundled_bun crashes
+out_crash="$(JAC_BUN="$tmp/other-bun/bun" doctor_with "$pinned")"
+check "fails the bun check when the bundled bun crashes, even with JAC_BUN set (JD-001)" grep -q "FAIL  Jac's bundled bun does not run on this CPU" <<<"$out_crash"
 
 echo
 echo "$passed passed, $failed failed"

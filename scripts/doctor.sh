@@ -28,19 +28,22 @@ else
 fi
 
 # 2. The bun that Jac uses for client builds runs on this CPU.
-#    Jac's bundled bun needs AVX2 (JI-002); CPUs without it (e.g. Celeron N4020) need bun's
-#    "baseline" build through JAC_BUN.
-if [[ -n "${JAC_BUN:-}" ]]; then
-    bun_bin="$JAC_BUN"; bun_src="JAC_BUN"
-else
-    bun_bin="$(ls -t "$HOME"/.cache/jac/rt/*/site/jaclang/client/_bun/bun 2>/dev/null | head -1)"; bun_src="bundled"
+#    Jac's bundled bun needs AVX2 (JI-002), and Jac ignores JAC_BUN (JD-001), so the bun that
+#    matters is the one inside the active runtime: <runtime>/site/jaclang/client/_bun/bun.
+bun_bin=""
+if command -v jac >/dev/null 2>&1; then
+    probe_dir="$(mktemp -d)"
+    printf 'import jaclang;\nwith entry { print(jaclang.__file__); }\n' > "$probe_dir/where.jac"
+    init_py="$(cd "$probe_dir" && jac run where.jac 2>/dev/null | grep -E '/jaclang/__init__\.py$' | tail -1)"
+    rm -rf "$probe_dir"
+    [[ -n "$init_py" ]] && bun_bin="$(dirname "$init_py")/client/_bun/bun"
 fi
-if [[ -z "$bun_bin" ]]; then
-    fail "no bun found for Jac client builds" "run 'jac install' in a project once so Jac unpacks its bundled bun"
+if [[ -z "$bun_bin" || ! -e "$bun_bin" ]]; then
+    fail "no bundled bun found in the active Jac runtime" "check that 'jac run' works, then rerun the doctor"
 elif bun_ver="$("$bun_bin" --version 2>/dev/null)"; then
-    pass "bun $bun_ver runs ($bun_src)"
+    pass "bun $bun_ver runs (bundled in the active Jac runtime)"
 else
-    fail "bun ($bun_src: $bun_bin) does not run on this CPU" "install bun's baseline build (github.com/oven-sh/bun/releases: bun-linux-x64-baseline.zip) and export JAC_BUN=/path/to/bun"
+    fail "Jac's bundled bun does not run on this CPU (no AVX2: JI-002)" "scripts/swap_bundled_bun.sh   (JAC_BUN is ignored: JD-001)"
 fi
 
 # 3. Python 3.10+ (pre-commit hooks)

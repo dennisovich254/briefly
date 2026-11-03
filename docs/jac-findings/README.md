@@ -24,4 +24,8 @@ Briefly's second purpose is a reproducible evaluation of how well Jac builds a r
 
 Sorted by severity (Blocker, Major, Minor, Cosmetic), then by ID.
 
-No findings yet.
+| ID | Behaviour | Category | Severity | Status | Workaround |
+|---|---|---|---|---|---|
+| [JD-001](JD-001-jac-bun-is-ignored.md) | `jac install` ignores `JAC_BUN` and always runs the bundled bun (fatal on CPUs without AVX2) | Defect | Major | open | `scripts/swap_bundled_bun.sh` |
+| [JD-002](JD-002-test-client-nested-entry.md) | `JacTestClient` cannot serve an entry that is not at the project root | Defect | Minor | open | lean entry at the root `main.jac` |
+| [JD-003](JD-003-desktop-identifier-gets-another-apps-name.md) | In a workspace, the desktop build appends another app's name to `[desktop] identifier` (and so to its data directory) | Defect | Minor | open | none needed |
