@@ -29,7 +29,7 @@ Use Jac's own way first for every concern (architecture §21.2). When it fails: 
 ## Commands
 
 - `scripts/doctor.sh`: checks the toolchain. On a CPU without AVX2, run `scripts/swap_bundled_bun.sh` after each Jac upgrade (JD-001).
-- `JAC_TEST_STRICT=1 jac test`: the test suite (strict, so a missing local import fails instead of being skipped).
+- `scripts/test.sh` (or `--quick`, which skips the canaries): the test suite, strict so a missing local import fails instead of being skipped. Domain code reads the time from `core/clock.jac`, and Git-history tests build repositories with `tests/support/git_fixtures.jac`.
 - `jac check`: type-checks both apps. Lint with explicit files: `jac check --lint $(git ls-files '*.jac')`.
 - `jac fmt --check <files>`: formatting. Review what `jac fmt` changes; do not use `--lintfix` blindly.
 - `jac run lean` / `jac run desktop`: run a profile. `jac browse` QAs the UI.

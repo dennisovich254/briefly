@@ -1,14 +1,5 @@
-import atexit;
 import os;
-import shutil;
 import tempfile;
-
-# Every fixture repo lives under one directory per test process, removed when the process exits.
-glob SCRATCH: str = tempfile.mkdtemp(prefix="briefly-findings-");
-
-with entry {
-    atexit.register(shutil.rmtree, SCRATCH, True);
-}
 
 glob MATRIX: str = """# Capability matrix
 
@@ -39,36 +30,36 @@ glob INDEX: str = """# Jac findings
 | [JD-001](JD-001-example.md) | Example behaviour | Major | open |
 """;
 
-"""Build a throwaway repository holding the given files; returns its root."""
-def make_repo(files: dict[str, str]) -> str {
-    base = tempfile.mkdtemp(dir=SCRATCH);
-    for (rel, text) in files.items() {
-        path = os.path.join(base, rel);
-        os.makedirs(os.path.dirname(path), exist_ok=True);
-        with open(path, "w") as fh {
-            fh.write(text);
+"""Check a throwaway repository holding `files`; the repository is removed afterwards."""
+def check_files(files: dict[str, str]) -> list[str] {
+    with tempfile.TemporaryDirectory(prefix="briefly-findings-") as base {
+        for (rel, text) in files.items() {
+            path = os.path.join(base, rel);
+            os.makedirs(os.path.dirname(path), exist_ok=True);
+            with open(path, "w") as fh {
+                fh.write(text);
+            }
         }
+        return check_tree(base);
     }
-    return base;
 }
 
-"""A valid log with one open finding and its canary, with `changes` applied on top."""
-def repo_with(changes: dict[str, str]) -> str {
+"""Check a valid log (one open finding and its canary) with `changes` applied on top."""
+def check_with(changes: dict[str, str]) -> list[str] {
     files: dict[str, str] = {
         "docs/jac-findings/capability-matrix.md": MATRIX,
         "docs/jac-findings/README.md": INDEX,
         "docs/jac-findings/JD-001-example.md": FINDING,
-        "tests/canaries/jd_001_example.jac": "",
-
+        "tests/canaries/jd_001_example.jac": ""
     };
     for (rel, text) in changes.items() {
         files[rel] = text;
     }
-    return make_repo(files);
+    return check_files(files);
 }
 
 def errors_for(finding_text: str) -> list[str] {
-    return check_tree(repo_with({"docs/jac-findings/JD-001-example.md": finding_text}));
+    return check_with({"docs/jac-findings/JD-001-example.md": finding_text});
 }
 
 def mentions(errors: list[str], needle: str) -> bool {
@@ -76,22 +67,22 @@ def mentions(errors: list[str], needle: str) -> bool {
 }
 
 test "a valid log has no errors" {
-    assert check_tree(repo_with({})) == [];
+    assert check_with(({})) == [];
 }
 
 test "an empty log has no errors" {
-    base = make_repo(
+    errors = check_files(
         {
             "docs/jac-findings/capability-matrix.md": MATRIX,
             "docs/jac-findings/README.md": "# Jac findings\n\nNo findings yet.\n",
 
         }
     );
-    assert check_tree(base) == [];
+    assert errors == [];
 }
 
 test "a missing findings directory is an error" {
-    assert mentions(check_tree(make_repo({"README.md": ""})), "docs/jac-findings");
+    assert mentions(check_files(({"README.md": ""})), "docs/jac-findings");
 }
 
 test "each required field must be present" {
@@ -205,17 +196,15 @@ test "a closed finding does not need its canary any more" {
 
 test "the title ID must match the file name" {
     assert mentions(errors_for(FINDING.replace("# JD-001:", "# JD-002:")), "title");
-    bad_name = check_tree(repo_with({"docs/jac-findings/JD-1-example.md": FINDING}));
+    bad_name = check_with(({"docs/jac-findings/JD-1-example.md": FINDING}));
     assert mentions(bad_name, "JD-1-example.md");
 }
 
 test "every finding must be in the index, and every index link must exist" {
-    unlisted = check_tree(
-        repo_with({"docs/jac-findings/README.md": "# Jac findings\n"})
-    );
+    unlisted = check_with(({"docs/jac-findings/README.md": "# Jac findings\n"}));
     assert mentions(unlisted, "JD-001 is not listed");
-    dangling = check_tree(
-        repo_with(
+    dangling = check_with(
+        (
             {
                 "docs/jac-findings/README.md": INDEX
                     + "| [JD-002](JD-002-nothing.md) | x | Minor | open |\n"
@@ -234,8 +223,8 @@ test "matrix verdicts must be from the list" {
         "Not documented",
         "Not yet exercised"
     ] {
-        assert check_tree(
-            repo_with(
+        assert check_with(
+            (
                 {
                     "docs/jac-findings/capability-matrix.md": MATRIX.replace(
                         "| Works |", f"| {verdict} |"
@@ -245,8 +234,8 @@ test "matrix verdicts must be from the list" {
         )
             == [] , verdict;
     }
-    bad = check_tree(
-        repo_with(
+    bad = check_with(
+        (
             {
                 "docs/jac-findings/capability-matrix.md": MATRIX.replace(
                     "| Works |", "| Kinda |"
@@ -260,7 +249,7 @@ test "matrix verdicts must be from the list" {
 test "the matrix needs at least one version column" {
     no_version = MATRIX.replace("| 0.39.0 |", "| Verdict |");
     assert mentions(
-        check_tree(repo_with({"docs/jac-findings/capability-matrix.md": no_version})),
+        check_with(({"docs/jac-findings/capability-matrix.md": no_version})),
         "version column"
     );
 }

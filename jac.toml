@@ -15,6 +15,11 @@ entry-point = "hosts.desktop.main"
 kind = "web-app"
 entry-point = "main"   # at the root: JD-002
 
+# Keep anchor-free modules on the server: Jac compiles them native by default, and natively
+# core/clock.jac segfaults or returns wrong times (JD-004). Remove once the JD-004 canary shows a fix.
+[placement]
+default = "server"
+
 # From the `jac create --kind desktop` scaffold.
 [dependencies.npm]
 react = "^19.2.0"
@@ -38,8 +43,13 @@ watchdog = ">=3.0.0"
 title = "Briefly"
 description = "An AI standup assistant for Ubuntu."
 
+# byLLM for every Claude call (architecture §10.1). The model is a placeholder until spike 1.4
+# verifies the identifiers the owner's key can use; tests use MockLLM and never call it.
+[byllm.model]
+default_model = "claude-haiku-5-5"
+
 [test]
-directory = "tests"
+directories = ["tests", "scripts"]
 
 [desktop]
 name = "briefly"
