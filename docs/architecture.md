@@ -2,7 +2,7 @@
 
 | Document control | Value |
 |---|---|
-| Version | 0.3 — adds the second purpose: a rigorous evaluation of Jac for desktop apps, with every shortcoming documented |
+| Version | 0.3.1 — pins Jac 0.39.0 as the phase 0 baseline (§3.2). 0.3 added the second purpose: a rigorous evaluation of Jac for desktop apps, with every shortcoming documented |
 | Product name | **Briefly**, an AI standup assistant; app identifier `briefly` |
 | Date | 2026-11-02 |
 | Product owner | Amon |
@@ -112,7 +112,11 @@ These are design choices to validate with the owner, not observations about thei
 
 ### 3.2 Jac baseline and local evidence
 
-The installed compiler reports **Jac 0.38.3**. The architecture was checked against its bundled `jac-essentials`, `jac-project-kinds`, `jac-desktop-app`, and `jac-by-llm` guides.
+The architecture was drafted against **Jac 0.38.3** and its bundled `jac-essentials`, `jac-project-kinds`, `jac-desktop-app`, and `jac-by-llm` guides. On 2026-11-03, before any code was written, the compiler was upgraded to **Jac 0.39.0** (released 2026-11-02), which is the pinned version for phase 0. The upgrade is recorded as the evaluation baseline. Changes in 0.39.0 that affect this design:
+
+- **Inline Python (`::py::`) is removed** ([#10475](https://github.com/jaseci-labs/jaseci/pull/10475)). OS/SDK adapters (§6.3) are written as `.py` modules imported from Jac.
+- **JacPython** ([#10299](https://github.com/jaseci-labs/jaseci/pull/10299)) replaces CPython's C with a Jac port and reports about 1.4× (pyperformance) to 1.9× (microbenchmarks) slowdown against stock CPython. The binary's embedded runtime reports CPython 3.14.6 (`cpython-314` ABI). Spike S0 must establish whether server code runs on JacPython, and S1 must confirm that the C-extension packages the adapters need install and load on this ABI.
+- Fixes to stale prepared/compiled records ([#10425](https://github.com/jaseci-labs/jaseci/pull/10425), [#10426](https://github.com/jaseci-labs/jaseci/pull/10426)) may resolve the stale prepared cache note in §21.3; re-test it in S0.
 
 Relevant findings:
 
@@ -1060,7 +1064,7 @@ All decisions below are **proposed**, pending their named evidence. Promote them
 | Generation ID | An identifier preventing obsolete model output from updating the active answer |
 | ADR | Architecture decision record, including rationale, alternatives, and consequences |
 
-Primary product input was read directly from `/home/amon/Documents/ideas.md`. Local technical evidence includes the installed Jac 0.38.3 guides (including `jac-desktop-app` and the 0.36 breaking-change note on PostgreSQL persistence), the owner's measured memory (`free -h`, 2026-11-02), and the linked AfriCinemas issue notes; the latter are historical findings rather than proof of current compiler behavior. External references are linked beside the claims they support and were consulted on 2026-11-02. Performance numbers, retention defaults, delivery estimates, interface names, and module structure are proposals authored for this product and require implementation evidence.
+Primary product input was read directly from `/home/amon/Documents/ideas.md`. Local technical evidence includes the Jac 0.38.3 guides (baseline upgraded to 0.39.0 on 2026-11-03, §3.2) (including `jac-desktop-app` and the 0.36 breaking-change note on PostgreSQL persistence), the owner's measured memory (`free -h`, 2026-11-02), and the linked AfriCinemas issue notes; the latter are historical findings rather than proof of current compiler behavior. External references are linked beside the claims they support and were consulted on 2026-11-02. Performance numbers, retention defaults, delivery estimates, interface names, and module structure are proposals authored for this product and require implementation evidence.
 
 ## 21. Jac ecosystem evaluation
 
