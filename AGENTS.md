@@ -38,7 +38,7 @@ Use Jac's own way first for every concern (architecture §21.2). When it fails: 
 - `jac run scripts/check_findings.jac`: checks the findings log.
 - `jac run bench/mem.jac [desktop|lean|both]`: memory (PSS, RSS) and CPU per process group against the §13 budgets; writes `bench/results/` and fails on a miss. Build the artifact first. `bench/window_sdk.sh` checks the desktop window API.
 - `scripts/check_governance.sh`: checks the governance files, and that `.env.example` lists every variable the app reads (names only). Name the app's variables `BRIEFLY_*`.
-- CI (`.github/workflows/ci.yml`) runs the same gates on every PR: `pr-title`, `quality` (the hooks, the ratchet, the hook self-test), `test` (the full suite), `build-lean` (`jac build lean` plus `scripts/smoke_lean.sh`), `build-desktop`, `security`. Pin every action to a full commit SHA with its release in a comment. `scripts/install_gitleaks.sh` and `scripts/install_actionlint.sh` install the hook binaries, checksum-verified.
+- CI (`.github/workflows/ci.yml`) runs the same gates on every PR: `pr-title`, `quality` (the hooks, the ratchet, the hook self-test), `test` (the full suite), `build-lean` (`jac build lean` plus `scripts/smoke_lean.sh`), `build-desktop`, `clean-install` (the desktop artifact in a fresh `ubuntu:24.04` container, then offline: `bench/install_check.sh`; `local` mode runs it on a development machine), `security`. Pin every action to a full commit SHA with its release in a comment. `scripts/install_gitleaks.sh` and `scripts/install_actionlint.sh` install the hook binaries, checksum-verified.
 
 ## Jac reference guides
 

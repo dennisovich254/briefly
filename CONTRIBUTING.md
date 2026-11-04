@@ -11,7 +11,7 @@ Briefly is an AI standup assistant for Ubuntu, built in [Jac](https://www.jaseci
 1. **Jac**, at the version pinned in `.jac-version`: `scripts/install_jac.sh`. It downloads the official release and refuses to install it unless the SHA-256 matches. The same script upgrades Jac (`jac update --self` does not work for this kind of install).
 2. **CPUs without AVX2** (for example Celeron and older Pentium chips): run `scripts/swap_bundled_bun.sh` after every Jac install or upgrade. Jac's bundled bun needs AVX2 and ignores `JAC_BUN` (JD-001).
 3. **Project dependencies:** `jac install`.
-4. **Desktop build only:** `sudo apt-get install pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev`.
+4. **Desktop build only:** `sudo apt-get install pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev`. To *run* a built desktop artifact on another machine, only `sudo apt-get install libwebkit2gtk-4.1-0` is needed (JD-026); the `clean-install` CI job checks that on a fresh Ubuntu 24.04.
 5. **Hooks:** install [pre-commit](https://pre-commit.com/), then run `scripts/install_gitleaks.sh`, `scripts/install_actionlint.sh` and `pre-commit install`. That installs the pre-commit, commit-msg and pre-push hooks. Do not run `jac precommit --install`: it replaces them (JD-008).
 6. **Check:** `scripts/doctor.sh` checks all of the above and prints a fix for anything missing.
 

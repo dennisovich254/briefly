@@ -141,7 +141,7 @@ case "$mode" in
             fail "the network is reachable; start this phase with --network none"
         fi
         note "- offline: no route to the internet"
-        check_launches "offline launch" "offline launch after a restart"
+        check_launches "offline launch" "second offline launch"
         ;;
     local)
         WORK="$(mktemp -d)"
