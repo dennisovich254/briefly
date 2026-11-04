@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the Jac version pinned in .jac-version from the official jaseci-labs/jaseci release,
+# Install the Jac version pinned in .jac-version from the official jaseci-labs/jac release,
 # REQUIRING a matching SHA-256 (the upstream install.sh only warns if the checksum is missing).
 # `jac update --self` does not work for this kind of install, so this is the way to upgrade too.
 # Used by CI and by new contributors.
@@ -11,7 +11,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 version="$(tr -d '[:space:]' < .jac-version)"
 dest="${JAC_INSTALL_DIR:-$HOME/.local/bin}"
-base="${JAC_RELEASE_BASE_URL:-https://github.com/jaseci-labs/jaseci/releases/download}"
+base="${JAC_RELEASE_BASE_URL:-https://github.com/jaseci-labs/jac/releases/download}"
 case "$(uname -s)-$(uname -m)" in
     Linux-x86_64)  platform="linux-x86_64" ;;
     Linux-aarch64) platform="linux-aarch64" ;;

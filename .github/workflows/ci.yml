@@ -1,0 +1,182 @@
+# Required checks for merging to main (plan 0.6). Every action is pinned to a full commit SHA;
+# the comment names its release.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    # Whether the change touches anything but docs. Docs-only pull requests skip the tests and
+    # builds; a job skipped by its `if` counts as passed for a required check. On main,
+    # everything runs.
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [[ "$EVENT" != pull_request ]]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed="$(git diff --name-only "$BASE...HEAD")"
+          printf 'Changed:\n%s\n' "$changed"
+          code=false
+          if grep -qvE '^docs/|\.md$' <<<"$changed"; then code=true; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "code=$code"
+
+  pr-title:
+    # Squash merges use the PR title as the commit message, so it follows the commit convention.
+    name: pr-title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            test
+            refactor
+            docs
+            chore
+            ci
+            bench
+
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-jac
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install pre-commit, gitleaks and actionlint (pinned, checksum-verified)
+        run: |
+          pip install pre-commit==4.7.0
+          scripts/install_gitleaks.sh
+          scripts/install_actionlint.sh
+      - name: Cache pre-commit environments
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: pre-commit hooks (the same gates as local commits)
+        env:
+          SKIP: no-commit-to-branch   # CI also runs on main after a merge; the rule is for local commits
+        run: pre-commit run --all-files --show-diff-on-failure
+      - name: Type check (0 errors, warnings <= baseline)
+        run: scripts/check_warnings.sh
+      - name: Hook self-test (each gate rejects bad input)
+        run: scripts/hooks_selftest.sh
+
+  test:
+    name: test
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-jac
+      - name: Test suite (strict, canaries included)
+        run: scripts/test.sh
+
+  build-lean:
+    name: build-lean
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-jac
+      - name: Build the lean app
+        run: jac build lean
+      - name: Smoke-test the artifact (page, /healthz, app_info)
+        run: scripts/smoke_lean.sh dist/briefly.jab
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: briefly-lean
+          path: dist/briefly.jab
+          if-no-files-found: error
+          retention-days: 7
+
+  build-desktop:
+    # The desktop artifact is about 260 MB, so it is built but not uploaded.
+    name: build-desktop
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Runner image (the package cache is per image)
+        id: image
+        run: echo "id=$ImageOS-$ImageVersion" >> "$GITHUB_OUTPUT"
+      - name: Cache desktop system packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/apt-archives
+          key: apt-desktop-${{ steps.image.outputs.id }}
+          restore-keys: apt-desktop-
+      - name: Install the WebKitGTK host's system packages (JI-005)
+        run: |
+          mkdir -p ~/apt-archives/partial
+          sudo apt-get update
+          sudo apt-get install -y -o Dir::Cache::Archives="$HOME/apt-archives" \
+            pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+          sudo chown -R "$USER" ~/apt-archives
+      - uses: ./.github/actions/setup-jac
+      - name: Build the desktop app
+        run: jac build desktop
+      - name: The launcher was built
+        run: test -x .jac/client/desktop/desktop/briefly
+
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write   # dependency-review posts a summary comment when it fails
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # scan the full history for secrets
+      - name: Secret scan (full history)
+        run: |
+          scripts/install_gitleaks.sh
+          gitleaks git --redact --no-banner -v .
+      - name: Dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure

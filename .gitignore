@@ -20,3 +20,4 @@ packages/
 venv/
 *.session
 *.session.*
+dist/
