@@ -7,9 +7,9 @@ import os;
 import re;
 import sys;
 
-glob FINDINGS_DIR: str = "docs/jac-findings";
-glob FINDING_FILE: str = r"^JD-(\d{3})-[a-z0-9-]+\.md$";
-glob REQUIRED_FIELDS: list[str] = [
+glob FINDINGS_DIR: str = "docs/jac-findings",
+     FINDING_FILE: str = r"^JD-(\d{3})-[a-z0-9-]+\.md$",
+     REQUIRED_FIELDS: list[str] = [
          "Version",
          "Found",
          "Category / severity",
@@ -18,26 +18,26 @@ glob REQUIRED_FIELDS: list[str] = [
          "Related",
          "Cost",
          "Canary"
-     ];
-glob CATEGORIES: list[str] = [
+     ],
+     CATEGORIES: list[str] = [
          "Defect",
          "Missing capability",
          "Documentation gap or error",
          "Packaging/install",
          "Performance/resource",
          "Developer-experience friction"
-     ];
-glob SEVERITIES: list[str] = ["Blocker", "Major", "Minor", "Cosmetic"];
-glob VERDICTS: list[str] = [
+     ],
+     SEVERITIES: list[str] = ["Blocker", "Major", "Minor", "Cosmetic"],
+     VERDICTS: list[str] = [
          "Works",
          "Works with workaround",
          "Fails",
          "Missing",
          "Not documented",
          "Not yet exercised"
-     ];
-glob OPEN_STATUSES: list[str] = [r"^open$", r"^reported \(.+\)$"];
-glob CLOSED_STATUSES: list[str] = [
+     ],
+     OPEN_STATUSES: list[str] = [r"^open$", r"^reported \(.+\)$"],
+     CLOSED_STATUSES: list[str] = [
          r"^fixed in \d+\.\d+\.\d+$",
          r"^won't fix$",
          r"^not a Jac issue \(withdrawn\)$"

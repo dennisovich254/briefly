@@ -23,9 +23,8 @@ def advance(delta: timedelta) {
 def value -> datetime | None {
     return _t;
 }
-""";
-
-glob MAIN_SRC: str = """import from datetime { datetime, timedelta, timezone }
+""",
+     MAIN_SRC: str = """import from datetime { datetime, timedelta, timezone }
 import from mod { setv, advance, value }
 
 with entry {
@@ -35,7 +34,7 @@ with entry {
 }
 """;
 
-def write(path: str, text: str) -> None {
+def write(path: str, text: str) {
     with open(path, "w") as fh {
         fh.write(text);
     }

@@ -7,9 +7,8 @@ glob MATRIX: str = """# Capability matrix
 |---|---|---|---|---|---|
 | Graph persistence and walkers | Evidence model | Correctness | JI-042 | Not yet exercised | |
 | Test runner (`jac test`) | Unit tests | Strict mode | JI-001 | Works | |
-""";
-
-glob FINDING: str = """# JD-001: Example behaviour
+""",
+     FINDING: str = """# JD-001: Example behaviour
 
 - **Version:** jaclang 0.39.0, Ubuntu 24.04, desktop
 - **Found:** 2026-11-03, phase 1 / S0
@@ -21,9 +20,8 @@ glob FINDING: str = """# JD-001: Example behaviour
 - **Canary:** tests/canaries/jd_001_example.jac
 
 ## Behaviour
-""";
-
-glob INDEX: str = """# Jac findings
+""",
+     INDEX: str = """# Jac findings
 
 | ID | Behaviour | Severity | Status |
 |---|---|---|---|

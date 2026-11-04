@@ -8,7 +8,7 @@ glob llm = MockLLM(outputs=["Merged the notices fix."]);
 
 def summarise(change: str) -> str by llm();
 
-def write(path: str, text: str) -> None {
+def write(path: str, text: str) {
     os.makedirs(os.path.dirname(path), exist_ok=True);
     with open(path, "w") as fh {
         fh.write(text);

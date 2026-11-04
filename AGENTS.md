@@ -30,8 +30,10 @@ Use Jac's own way first for every concern (architecture §21.2). When it fails: 
 
 - `scripts/doctor.sh`: checks the toolchain. On a CPU without AVX2, run `scripts/swap_bundled_bun.sh` after each Jac upgrade (JD-001).
 - `scripts/test.sh` (or `--quick`, which skips the canaries): the test suite, strict so a missing local import fails instead of being skipped. Domain code reads the time from `core/clock.jac`, and Git-history tests build repositories with `tests/support/git_fixtures.jac`.
-- `jac check`: type-checks both apps. Lint with explicit files: `jac check --lint $(git ls-files '*.jac')`.
-- `jac fmt --check <files>`: formatting. Review what `jac fmt` changes; do not use `--lintfix` blindly.
+- `pre-commit install` once per clone: installs the pre-commit, commit-msg (Conventional Commits) and pre-push hooks from `.pre-commit-config.yaml`. Do not run `jac precommit --install`: it replaces them (JD-008). `scripts/hooks_selftest.sh` checks every gate.
+- `jac precommit <files>`: applies Jac's formatting and auto-fixable lint fixes, which the commit hook requires. Review its diff: it can move comments (JD-009).
+- `scripts/jac_lint.sh [files]`: lint that fails on any violation (`jac check --lint` exits 0 on them: JD-006).
+- `scripts/check_warnings.sh`: type-checks the apps and every tracked file (a bare `jac check` skips files no app imports: JD-005); 0 errors and warnings at or below `.jac-warnings-baseline`. Runs on pre-push.
 - `jac run lean` / `jac run desktop`: run a profile. `jac browse` QAs the UI.
 - `jac run scripts/check_findings.jac`: checks the findings log.
 

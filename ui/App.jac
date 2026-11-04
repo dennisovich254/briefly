@@ -3,8 +3,8 @@
 import from core.app_info { AppInfo, app_info }
 
 def:pub App(profile: str) -> JsxElement {
-    has info: AppInfo | None = None;
-    has failed: bool = False;
+    has info: AppInfo | None = None,
+        failed: bool = False;
 
     async can with entry {
         try {

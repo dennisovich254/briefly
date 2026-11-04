@@ -1,0 +1,80 @@
+# Local quality gates (plan 0.5). Install once with:  pre-commit install
+# Self-test the gates with:                          scripts/hooks_selftest.sh
+# Do not use `jac precommit --install`: it replaces these hooks with its own two (JD-008).
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+# .claude/ is git-ignored (local-only) and .jac/ is build cache: never touch either. The pre-push
+# stage passes every path changed in the pushed commits, so ignored paths must be excluded here too.
+exclude: ^(\.claude/|\.jac/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main]
+
+  # gitleaks-system runs the installed gitleaks (checked by scripts/doctor.sh). pass_filenames:
+  # false is required: without it pre-commit appends file names, gitleaks takes the first as the
+  # repository path, scans nothing and passes (found in AfriCinemas; scripts/hooks_selftest.sh).
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks-system
+        pass_filenames: false
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, test, refactor, docs, chore, ci, bench]
+
+  # The jac hooks run serially: each jac process takes a few hundred MB on a 4 GB laptop.
+  - repo: local
+    hooks:
+      # Jac's own gate: formatting, auto-fixable lint violations and type errors.
+      - id: jac-precommit
+        name: jac precommit --verify
+        entry: jac precommit --verify
+        language: system
+        files: \.jac$
+        require_serial: true
+      # Report-only lint violations, which no Jac command fails on (JD-006).
+      - id: jac-lint
+        name: jac check --lint (fails on any finding)
+        entry: scripts/jac_lint.sh
+        language: system
+        files: \.jac$
+        require_serial: true
+      - id: check-findings
+        name: findings log (jac run scripts/check_findings.jac)
+        entry: jac run scripts/check_findings.jac
+        language: system
+        files: ^(docs/jac-findings/|tests/canaries/|bench/|scripts/check_findings)
+        pass_filenames: false
+      - id: jac-check-ratchet
+        name: jac check (0 errors, warnings <= baseline)
+        entry: scripts/check_warnings.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: jac-test-quick
+        name: scripts/test.sh --quick
+        entry: scripts/test.sh --quick
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
