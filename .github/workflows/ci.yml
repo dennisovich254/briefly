@@ -95,6 +95,8 @@ jobs:
         run: scripts/check_warnings.sh
       - name: Hook self-test (each gate rejects bad input)
         run: scripts/hooks_selftest.sh
+      - name: Governance files (CONTRIBUTING, SECURITY, templates, .env.example, ignores)
+        run: scripts/check_governance.sh
 
   test:
     name: test
