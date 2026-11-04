@@ -31,6 +31,21 @@ as_user() {
     fi
 }
 
+# Unresolved shared libraries of the files the app runs (`core`: the host, libwebview.so and
+# PostgreSQL's programs and libraries) or of the optional PostgreSQL modules it bundles (`optional`:
+# procedural languages, foreign-data wrappers, ecpg), which the app never loads.
+missing_libs() {
+    local files
+    if [[ "$1" == core ]]; then
+        files="$(find "$APP_DIR" -maxdepth 1 -type f; find "$APP_DIR/pgdist/bin" -type f; find "$APP_DIR/pgdist/lib" -maxdepth 1 -type f ! -name 'libecpg*')"
+    else
+        files="$(find "$APP_DIR/pgdist/lib/postgresql" -type f; find "$APP_DIR/pgdist/lib" -maxdepth 1 -type f -name 'libecpg*')"
+    fi
+    for f in $files; do
+        file -b "$f" 2>/dev/null | grep -q ELF && ldd "$f" 2>/dev/null
+    done | grep 'not found' | awk '{print $1}' | sort -u
+}
+
 # Launch the app under Xvfb, wait for the page's record_open, read app_opens, then stop the app
 # with SIGTERM and stop its PostgreSQL (what a logout or reboot leaves; JD-020). Prints the count.
 launch_once() {
@@ -99,8 +114,7 @@ case "$mode" in
         chown -R "$APP_USER:$APP_USER" "$APP_DIR"
         note "- installed size: $(du -sh "$APP_DIR" | cut -f1) in $APP_DIR"
         step "shared libraries the artifact needs that this system lacks"
-        missing="$(find "$APP_DIR" -type f \( -name '*.so*' -o -perm -u+x \) -exec sh -c 'file -b "$1" 2>/dev/null | grep -q ELF && ldd "$1" 2>/dev/null' _ {} \; 2>/dev/null \
-            | grep 'not found' | awk '{print $1}' | sort -u)"
+        missing="$(missing_libs core)"
         if [[ -n "$missing" ]]; then
             note "- missing before any install: $(echo $missing | tr '\n' ' ')"
         else
@@ -111,10 +125,11 @@ case "$mode" in
         dpkg-query -f '${Package}\n' -W | sort > "$WORK/after.txt"
         added="$(comm -13 "$WORK/before.txt" "$WORK/after.txt" | wc -l)"
         note "- runtime packages added: libwebkit2gtk-4.1-0 and $((added - 1)) dependencies (root needed once, for apt-get)"
-        still="$(find "$APP_DIR" -type f \( -name '*.so*' -o -perm -u+x \) -exec sh -c 'file -b "$1" 2>/dev/null | grep -q ELF && ldd "$1" 2>/dev/null' _ {} \; 2>/dev/null \
-            | grep 'not found' | awk '{print $1}' | sort -u)"
+        still="$(missing_libs core)"
         [[ -z "$still" ]] || fail "shared libraries still missing after installing the runtime: $(echo $still)"
-        note "- every shared library resolves"
+        note "- every shared library of the host, libwebview.so and PostgreSQL's programs resolves"
+        optional="$(missing_libs optional)"
+        [[ -z "$optional" ]] || note "- optional PostgreSQL modules bundled in pgdist/lib (procedural languages, foreign-data wrappers, ecpg) link libraries that are absent: $(echo $optional | tr '\n' ' '); the app does not load them"
         check_launches "first launch" "second launch"
         ;;
     offline)
