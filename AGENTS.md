@@ -36,6 +36,7 @@ Use Jac's own way first for every concern (architecture §21.2). When it fails: 
 - `scripts/check_warnings.sh`: type-checks the apps and every tracked file (a bare `jac check` skips files no app imports: JD-005); 0 errors and warnings at or below `.jac-warnings-baseline`. Runs on pre-push.
 - `jac run lean` / `jac run desktop`: run a profile. `jac browse` QAs the UI.
 - `jac run scripts/check_findings.jac`: checks the findings log.
+- `scripts/check_governance.sh`: checks the governance files, and that `.env.example` lists every variable the app reads (names only). Name the app's variables `BRIEFLY_*`.
 - CI (`.github/workflows/ci.yml`) runs the same gates on every PR: `pr-title`, `quality` (the hooks, the ratchet, the hook self-test), `test` (the full suite), `build-lean` (`jac build lean` plus `scripts/smoke_lean.sh`), `build-desktop`, `security`. Pin every action to a full commit SHA with its release in a comment. `scripts/install_gitleaks.sh` and `scripts/install_actionlint.sh` install the hook binaries, checksum-verified.
 
 ## Jac reference guides

@@ -1,0 +1,14 @@
+# Keeps the SHA-pinned GitHub Actions current; Dependabot updates both the SHA and the version
+# comment. Jac's Python and npm dependencies live in jac.toml and jac.lock, which Dependabot
+# cannot read: bump those by hand in a PR (and .jac-version for Jac itself, plan §2.5).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
