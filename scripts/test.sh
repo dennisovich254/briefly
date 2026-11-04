@@ -21,6 +21,11 @@ while (( $# )); do
     shift
 done
 
+# Run as a Git hook, Git exports GIT_DIR and friends; tests that build throwaway repositories must
+# not inherit them (from a linked worktree, `git init` would reinitialise this repository).
+# shellcheck disable=SC2046
+unset $(git rev-parse --local-env-vars)
+
 export JAC_TEST_STRICT=1
 export BRIEFLY_CLOCK_CONTROL=1
 

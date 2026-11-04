@@ -6,6 +6,9 @@
 # ~/.cache/pre-commit). Exits non-zero on any miss.
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# The throwaway repository must not inherit GIT_DIR and friends from a calling hook.
+# shellcheck disable=SC2046
+unset $(git rev-parse --local-env-vars)
 WORK="$(mktemp -d -t briefly-hooks-XXXXXX)"
 trap 'rm -rf "$WORK"' EXIT
 
