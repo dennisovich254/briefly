@@ -1,6 +1,7 @@
 """The Briefly UI root, shared by the desktop and lean profiles (architecture §6.1)."""
 
 import from core.app_info { AppInfo, app_info }
+import from "briefly-ci-probe-missing-package" { Nothing }
 
 def:pub App(profile: str) -> JsxElement {
     has info: AppInfo | None = None,
