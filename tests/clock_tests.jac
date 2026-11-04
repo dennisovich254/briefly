@@ -61,3 +61,16 @@ test "control is refused unless BRIEFLY_CLOCK_CONTROL=1" {
     }
     assert now() != T0;
 }
+
+test "now ignores a frozen time in the environment unless clock control is on" {
+    saved = os.environ.pop("BRIEFLY_CLOCK_CONTROL", None);
+    os.environ["BRIEFLY_CLOCK_FROZEN_AT"] = T0.isoformat();
+    try {
+        assert now() != T0;
+    } finally {
+        os.environ.pop("BRIEFLY_CLOCK_FROZEN_AT", None);
+        if saved is not None {
+            os.environ["BRIEFLY_CLOCK_CONTROL"] = saved;
+        }
+    }
+}
