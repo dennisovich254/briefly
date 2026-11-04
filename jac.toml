@@ -62,3 +62,8 @@ width = 900
 height = 640
 min_width = 480
 min_height = 360
+
+# The guide says `window` is enabled by default, but without this table every app_window call fails
+# with "Plugin 'jac.window' is not registered" (JD-022).
+[desktop.plugins]
+window = true

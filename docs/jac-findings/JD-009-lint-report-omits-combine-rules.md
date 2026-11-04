@@ -27,6 +27,19 @@ glob A: int = 1,
 
 so the comment describes the wrong value. In Briefly it moved `# 2026-01-05T09:00:00Z` from `START_EPOCH` to `PAIR` in `tests/support/git_fixtures.jac`. Once placed back by hand, `jac fmt` and `--lintfix` leave it there.
 
+A second case, seen in 1.2 (not covered by the canary): `--lintfix` (so `jac precommit`) moves assignments out of a `with entry` block into module-level `glob`s, splitting the block in two, and `jac check --lint` reports nothing about it:
+
+```jac
+with entry {                          # becomes:   glob args = sys.argv[1:];
+    args = sys.argv[1:];              #            with entry {
+    mode = args[0] if args else "";   #                mode = args[0] if args else "";
+    found: list[str] = [];            #            }
+    ...                               #            glob found: list[str] = [];
+}                                     #            with entry { ... }
+```
+
+Behaviour is unchanged (entry-block variables are module-level), but the code is harder to read. `bench/mem.jac` avoids it by doing its work in a `main()` function (`~/jac-repros/S1b-lintfix/`).
+
 ## Expected
 
 The `[check.lint]` reference (`jac guide reference/config --section checklint`) lists both rules in the `default` group and says the configuration selects "which auto-lint rules are active during `jac check --lint` and `jac check --lint --fix`": the same rules in both modes. A comment stays with the declaration it was written on.

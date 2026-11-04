@@ -72,7 +72,7 @@ A sub-phase that turns out too large is split into lettered parts (`3.3a`, `3.3b
 | Canaries (one per open testable finding, `jd_NNN_*.jac`) | `jac test` | `tests/canaries/` | pre-push, CI |
 | UI (desktop window and phone view) | `jac browse` first; Playwright only after a logged finding shows `jac browse` cannot do it | `tests/ui/` | CI where headless works; manual otherwise |
 | Measurements (RSS per process, CPU, startup, build size) | shell scripts on the owner's laptop | `bench/` | manual gate, results committed |
-| Packaging (clean-VM install, offline start) | scripted checklist | `bench/install_check.sh` | manual gate per phase |
+| Packaging (clean install, offline start) | the artifact in a fresh `ubuntu:24.04` container | `bench/install_check.sh` | CI |
 
 Rules (from the Jac testing guide and AfriCinemas): never name files `test_*.jac`; each test builds its own data and temp directories; run tests through `scripts/test.sh`, which sets `JAC_TEST_STRICT=1` so a missing local import fails instead of being skipped (JI-001); never call a real Claude, speech-to-text or GitHub API in CI.
 
@@ -87,7 +87,7 @@ Rules (from the Jac testing guide and AfriCinemas): never name files `test_*.jac
 
 ### 2.5 When a new Jac release appears
 
-A compiler release interrupts the plan with one extra sub-phase, `chore/jac-<version>`, taken **between** sub-phases, never in the middle of one. It follows the upgrade protocol (§21.5): read the release notes, bump `.jac-version`, clear compiled caches, run `jac check` and the full suite with canaries, build and install the desktop artifact on the clean VM, run the measurements, update finding statuses and matrix verdicts, and write the release report. The owner decides whether to take the upgrade now or after the current phase.
+A compiler release interrupts the plan with one extra sub-phase, `chore/jac-<version>`, taken **between** sub-phases, never in the middle of one. It follows the upgrade protocol (§21.5): read the release notes, bump `.jac-version`, clear compiled caches, run `jac check` and the full suite with canaries, build the desktop artifact and run the clean-install job, run the measurements, update finding statuses and matrix verdicts, and write the release report. The owner decides whether to take the upgrade now or after the current phase.
 
 ---
 
@@ -180,21 +180,25 @@ Each spike writes its pass criteria (§17.1) as a test or `bench/` script first,
   - **T:** canaries `jd_012`, `jd_013`, `jd_015`, `jd_016`, `jd_017`, `jd_018`, `jd_019` in `tests/canaries/`; `bench/jd_010_bundled_bun_needs_avx2.sh` and `bench/jd_011_desktop_build_needs_sudo.sh` for the two that cannot be unit tests. Each switch-dependent canary is mutation-checked (strict mode, a web scaffold, a short `TMPDIR`, serial workers, a strong password, a working bun, real `pkg-config`).
   - **✓** Every input classified in the matrix (0.39.0 column); the still-holding ones have JD entries linking their JI entry, and canaries (JD-014 has none: it is a feature request tracked by #10319).
 
-- [ ] **1.2 S1a: desktop artifact and clean install** (FR-16, §16.3)
-  - **I:** `jac build desktop` with graph persistence on. A clean Ubuntu 24.04 VM (no checkout, no venv, no compiler). `bench/install_check.sh` installs the artifact, launches it, checks that the window opens, the graph persists across a restart, and the app starts offline; it records every manual step, privilege prompt, missing package and size.
-    - From 1.1: on a machine without the WebKitGTK development packages, the build runs `sudo apt-get` itself and ends in a traceback (JD-011). Add a doctor check for the packages and record what the VM needs.
-  - **T:** `bench/install_check.sh` fails on the VM before the artifact exists, then passes or reports the exact failing step.
-  - **✓** Install steps and sizes recorded; every deviation from "Jac's artifact just works" is a finding.
-- [ ] **1.3 S1b: memory, CPU and window SDK** (NFR-01, §13, §21.6)
-  - **I:** `bench/mem.sh` measures RSS per process (host, WebKit, embedded server, PostgreSQL) for both profiles, idle and during a 15-minute replayed call with Meet and VS Code open, five runs, median and range, after a reboot. Window SDK checks: size, fullscreen, always-on-top, second window, close/restore (§21.3). Optionally the same measurement with `[desktop] engine = "cef"` for comparison. Confirm that the planned OS adapter packages (D-Bus/portal bindings, keyring client, the STT SDK candidates) install and import under Jac. Follow up what 0.3 saw:
+- [x] **1.2 S1b: memory, CPU and window SDK** (NFR-01, §13, §21.6)
+  - Moved ahead of the clean install (owner, 2026-11-04): memory is the spike most likely to fail (0.3 measured about 670 MB of summed RSS at idle against 300 MB), and its fix could change the artifact the install test checks.
+  - **I:** `bench/mem.jac` (in Jac, not shell: the Jac-first rule) measures PSS and RSS per process group (host, WebKit, embedded server, PostgreSQL) for both profiles, idle and during a 15-minute replayed call with Meet and VS Code open, five runs, median and range, after a reboot. Window SDK checks: size, fullscreen, always-on-top, second window, close/restore (§21.3). Optionally the same measurement with `[desktop] engine = "cef"` for comparison. Confirm that the planned OS adapter packages (D-Bus/portal bindings, keyring client, the STT SDK candidates) install and import under Jac. Follow up what 0.3 saw:
     - At idle the desktop app's `briefly` process had about 443 MB RSS and its PostgreSQL 11 processes summing 227 MB of RSS (shared memory counted more than once; measure PSS), against a 300 MB idle budget.
     - The app's PostgreSQL kept running after the app was stopped with SIGTERM. Check a normal window close (the owner closes it by hand) and whether the cluster ever stops on its own. The shared development cluster in `~/.cache/jac/pg/` that `jac test` and `jac run` start also stays up; measure it too.
     - From 1.1: a served `.jab` (`jac run --serve`, 1–2 workers) took about 30 s to exit after SIGTERM. Measure the desktop app's shutdown time on window close.
     - The window bridge answered `Plugin 'window' is not registered` to `["window", "terminate", {}]`, although the desktop guide says `window` is enabled by default; the generated host config had `"plugins": {}`.
-  - **T:** `bench/mem.sh` writes a results file and exits non-zero when a §13 budget is missed.
-  - **✓** Numbers committed. ADR (A02, A07): which profile is used for daily standups, and whether the lean profile needs `store=files`. A miss is a performance finding with the per-process breakdown.
+  - **T:** `bench/mem.jac` writes `bench/results/mem-<profile>-<phase>-<time>.json` and exits 1 when a median misses its §13 budget; `bench/x11_close.jac` closes the window the normal way; `bench/window_sdk.sh` checks each `app_window` call against the real X11 window. Canaries: `tests/canaries/jd_021_signal_sigkill_unknown.jac`, `bench/jd_020_desktop_pg_survives_sigterm.sh`, `bench/jd_022_window_plugin_not_registered.sh`, each mutation-checked.
+  - **Results (idle, five runs each, PSS median; `bench/results/README.md` lists every batch):** desktop **335.0 MB** against 300 (host 123, WebKit 110, PostgreSQL 102; USS 227, summed RSS 581), so the budget is missed; lean 84.3 MB with one worker, without PostgreSQL because the lean app does not touch the graph yet. Jac's default worker count follows free memory (two workers and 104 MB in one batch, one worker in the next). Idle CPU at most 0.2 %. Desktop startup 3.1–4.4 s; a window close stops the host and its PostgreSQL in 1.6–5.1 s, but SIGTERM leaves PostgreSQL running (JD-020). The 30 s shutdown seen in 1.1 does not apply: the lean server exits 0.5 s after SIGTERM. PSS moves with what else maps the same libraries (one desktop run measured 281 MB), so `bench/mem.jac` also reports USS. Window SDK: `set_title`, `set_size`, `fullscreen` and `terminate` work, but only once `window` is listed in `[desktop.plugins]` (JD-022, now in `jac.toml`), which also explains 0.3's "Plugin 'window' is not registered"; always-on-top, a second window and minimise/restore do not exist (JD-023). OS adapters: `jeepney`, `dbus-fast`, `secretstorage`, `keyring`, `websockets`, `deepgram-sdk` and `assemblyai` install and import under Jac, the portal and Secret Service answer; `sounddevice` needs the system `libportaudio2`.
+  - **Findings:** JD-020 (Minor), JD-021 (Minor), JD-022 (Minor), JD-023 (Minor; upstream #9951 closed as not planned), JD-024 (Major: the desktop's single-user PostgreSQL is tuned for 256 connections, about 72 MB at idle; single-user settings would give about 263 MB).
+  - **✓** Idle numbers committed (`bench/results/`). [ADR 0001](adr/0001-profiles-and-store-after-s1b.md): the desktop stays primary, the lean profile runs one worker, the graph stays the only store (`store=files` not needed; the lean estimate with PostgreSQL is 178 MB). **Not done here:** the meeting-phase runs, moved to 1.6 where audio exists (the owner runs them during a real call), and the optional CEF comparison.
+- [ ] **1.3 S1a: desktop artifact and clean install** (FR-16, §16.3)
+  - **I:** `jac build desktop` with graph persistence on. The clean install runs on GitHub Actions (owner, 2026-11-04; a desktop VM does not fit in the laptop's 3.3 GiB): one job builds the artifact on a runner, a second job installs it in a fresh `ubuntu:24.04` container (no checkout, no venv, no compiler, no development packages) and runs it under Xvfb. `bench/install_check.sh` installs the artifact, launches it, checks that the window's page loads, the graph persists across a restart, and the app starts with networking off; it records every package it had to add, every privilege it needed, and the sizes. A container on a runner is not a stock desktop (no GNOME session, keyring or portals); those are checked on the owner's laptop instead.
+    - From 1.1: on a machine without the WebKitGTK development packages, the build runs `sudo apt-get` itself and ends in a traceback (JD-011). Add a doctor check for the packages and record what a clean system needs to *run* the artifact, as opposed to build it.
+    - From 1.2: the generated `briefly-launch.sh` points `JAC_DESKTOP_DEPS` at `../../../venv/lib`, the project's own `.jac/venv`, so the artifact can borrow Python packages from the development checkout. The clean install must run without it.
+  - **T:** `bench/install_check.sh` fails in the container before the artifact exists, then passes or reports the exact failing step.
+  - **✓** Install steps and sizes recorded; every deviation from "Jac's artifact just works" is a finding; the job runs in CI.
 - [ ] **1.4 S4: byLLM and real-time delivery** (FR-10, §10.1, §11.3)
-  - **I:** A spike endpoint that streams a byLLM answer from the configured Claude model to the desktop window and to a browser tab. Check, through byLLM: streaming, cancellation, timeouts, token usage, image input, structured output. Delivery, in the §11.3 order: native desktop-host events, targeted WebSockets, an authenticated response stream. Verify the Claude model IDs available to the owner's key and replace the placeholder `[byllm.model] default_model`. Seen in 0.4: declaring byLLM makes `jac install` add litellm, openai, tiktoken, tokenizers and pillow, growing `.jac/venv` from 25 MB to 323 MB, and even `MockLLM` refuses to run without them. Measure what that adds to the desktop artifact (1.2) and to the server's memory once byLLM is imported (1.3).
+  - **I:** A spike endpoint that streams a byLLM answer from the configured Claude model to the desktop window and to a browser tab. Check, through byLLM: streaming, cancellation, timeouts, token usage, image input, structured output. Delivery, in the §11.3 order: native desktop-host events, targeted WebSockets, an authenticated response stream. Verify the Claude model IDs available to the owner's key and replace the placeholder `[byllm.model] default_model`. Seen in 0.4: declaring byLLM makes `jac install` add litellm, openai, tiktoken, tokenizers and pillow, growing `.jac/venv` from 25 MB to 323 MB, and even `MockLLM` refuses to run without them. Measure what that adds to the desktop artifact (1.3) and to the server's memory once byLLM is imported (1.2).
   - **T:** `tests/ai/` contract tests with `MockLLM` for structured output and cancellation; a manual `bench/stream_latency.sh` measuring time to first readable sentence over 20 runs.
   - **✓** ADR (A05): which calls stay on byLLM and which move behind `llm=sdk` (each with a finding); the delivery mechanism chosen. Must show the four-second first-useful-output target is reachable or log why not.
 - [ ] **1.5 S7: phone link** (FR-08, §5.6)
@@ -203,6 +207,7 @@ Each spike writes its pass criteria (§17.1) as a test or `bench/` script first,
   - **✓** ADR (A03): HTTPS practical or hotspot-only rule.
 - [ ] **1.6 S3: speech-to-text** (FR-07, §9.3, §9.6)
   - **I:** Capture the meeting-output stream and the microphone as separate PipeWire streams; stream a recorded test call to two or three cloud services and one local small model; feed a vocabulary list. Confirm whether Claude's API accepts live audio.
+    - From 1.2: the §13 meeting-phase measurement: `jac run bench/mem.jac both --phase meeting --runs 5`, run by the owner during a real 15-minute call with Meet and VS Code open, after a reboot. `sounddevice` needs the system `libportaudio2`.
   - **T:** `bench/stt_score.sh` scores a fixed, consented recording for question-critical entities and WER; capture tests confirm the two streams stay separate.
   - **✓** ADR (A04, A12): default service, with latency, accuracy on names and code terms, retention terms and price recorded.
 - [ ] **1.7 S5: screen reading** (FR-15, §9.4)
@@ -354,7 +359,7 @@ VS Code bridge (FR-03, §7.2), semantic retrieval (FR-14), local speech model fo
 | Weeks | Phases | Risk / mitigation |
 |---|---|---|
 | 1 | P0, start P1 | A scaffold or CI problem stalls tooling → log it, apply the smallest workaround, keep going |
-| 2 | P1 | **The desktop profile may not fit 4 GB** (1.3) → daily use moves to the lean profile; the desktop stays the evaluation target |
+| 2 | P1 | **The desktop profile may not fit 4 GB** (1.2) → daily use moves to the lean profile; the desktop stays the evaluation target |
 | 3 | P2, P3 | GitHub edge cases (squash merges, force pushes) grow → keep ambiguous attribution ambiguous; do not chase perfect matching |
 | 4–5 | P4 | byLLM streaming gaps (1.4) → `llm=sdk` for that path only, with its finding |
 | 6–7 | P5 | Speech accuracy on accents and code terms → typed questions and prepared answers keep the product useful |
@@ -366,7 +371,7 @@ Time spent diagnosing Jac problems is tracked in each finding's Cost field so th
 
 1. `scripts/doctor.sh && pre-commit run --all-files && jac check && scripts/test.sh` → all green locally.
 2. CI on `main`: every required check green.
-3. The desktop artifact installs and runs on the clean VM (`bench/install_check.sh`).
+3. The desktop artifact installs and runs in the clean-install CI job (`bench/install_check.sh`).
 4. Measurements re-run and compared with the previous report (`bench/`).
 5. From phase 4: the first-milestone flow works in a real standup on the phone. From phase 5: a full standup with live listening, with the laptop showing no content during a full-screen share.
 6. The phase report is written and reviewed by the owner.
@@ -375,7 +380,7 @@ Time spent diagnosing Jac problems is tracked in each finding's Cost field so th
 
 - **Decided 2026-11-03:** the owner merges every PR; Claude opens PRs and never merges them.
 - **Done 2026-11-04 (0.6):** the owner approved the branch-protection ruleset; Claude applied it with `gh` (see 0.6).
-- **Before 1.2:** a clean Ubuntu 24.04 VM for install tests; an 8 GB+ VM for comparison numbers if available (§3.1).
+- **Decided 2026-11-04:** the clean install runs on GitHub Actions (1.3), not in a VM, which does not fit in the laptop's 3.3 GiB; memory (1.2) comes before it. An 8 GB+ machine for comparison numbers if available (§3.1).
 - **Before 1.4:** a Claude API key with a budget for spikes, and which models it can access.
 - **Before 1.6:** a consented test recording; which speech-to-text services to trial and keys for them.
 - **Before 3.3:** a synthetic GitHub repository for the opt-in live tests, and a fine-grained token for it.
