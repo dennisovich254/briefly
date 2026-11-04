@@ -28,6 +28,7 @@ Sorted by severity (Blocker, Major, Minor, Cosmetic), then by ID.
 |---|---|---|---|---|---|
 | [JD-001](JD-001-jac-bun-is-ignored.md) | `jac install` ignores `JAC_BUN` and always runs the bundled bun (fatal on CPUs without AVX2) | Defect | Major | open | `scripts/swap_bundled_bun.sh` |
 | [JD-004](JD-004-native-module-crashes-on-optional-datetime.md) | A module Jac compiles native by default crashes (`jac run`) or returns wrong values (`jac test`) on a `datetime \| None` glob plus `timedelta` | Defect | Major | open | `[placement] default = "server"` |
+| [JD-024](JD-024-embedded-postgres-server-tuning.md) | The desktop app's single-user PostgreSQL is tuned for 256 connections: about 78 MB idle, and the desktop misses its 300 MB budget (335 MB) | Performance/resource | Major | open | none inside Jac |
 | [JD-002](JD-002-test-client-nested-entry.md) | `JacTestClient` cannot serve an entry that is not at the project root | Defect | Minor | open | lean entry at the root `main.jac` |
 | [JD-003](JD-003-desktop-identifier-gets-another-apps-name.md) | In a workspace, the desktop build appends another app's name to `[desktop] identifier` (and so to its data directory) | Defect | Minor | open | none needed |
 | [JD-005](JD-005-check-skips-unreached-files.md) | `jac check` with no paths skips every file no app imports, though `--help` promises an orphan sweep | Defect | Minor | open | `scripts/check_warnings.sh` also checks every tracked file by name |
@@ -43,5 +44,9 @@ Sorted by severity (Blocker, Major, Minor, Cosmetic), then by ID.
 | [JD-017](JD-017-pg-socket-follows-tmpdir.md) | The embedded Postgres socket follows the caller's TMPDIR; a long one stalls 60 s, then `AF_UNIX path too long` | Defect | Minor | open | never set a long `TMPDIR` |
 | [JD-018](JD-018-atexit-skipped-in-test-workers.md) | `atexit` handlers in test modules never run in parallel `jac test` workers | Developer-experience friction | Minor | open | per-test `TemporaryDirectory()` |
 | [JD-019](JD-019-testing-guide-password-rejected.md) | The testing guide's `JacTestClient` example registers a password the auth policy rejects, silently | Documentation gap or error | Minor | open | strong fixture password, assert registration |
+| [JD-020](JD-020-desktop-postgres-survives-sigterm.md) | The desktop app's own PostgreSQL stops on a window close but keeps running after SIGTERM (logout, shutdown) | Defect | Minor | open | none (reused by the next launch) |
+| [JD-021](JD-021-signal-sigkill-unknown.md) | `signal.SIGKILL` (also SIGSTOP, SIGHUP) is Unknown to the checker, so `jac check` and `jac run` refuse valid code | Defect | Minor | open | `signal.Signals.SIGKILL` |
+| [JD-022](JD-022-window-plugin-not-registered.md) | Without a `[desktop.plugins]` table every `app_window` call fails: "Plugin 'jac.window' is not registered" | Defect | Minor | open | `[desktop.plugins] window = true` |
+| [JD-023](JD-023-window-api-missing-controls.md) | The desktop window API has no always-on-top, second window, minimise/restore or window events (#9951 not planned) | Missing capability | Minor | open | none needed for the MVP |
 | [JD-015](JD-015-fmt-layout-quirks.md) | `jac fmt`: 9-space glob continuation, `assert x , msg`, one-line dict keeping its trailing comma, splits inside f-string braces | Defect | Cosmetic | open | none needed |
 | [JD-016](JD-016-build-output-markup.md) | `jac build` prints raw `[cyan]` markup and a `Run with: .//…` path into a temp directory | Defect | Cosmetic | open | none needed |

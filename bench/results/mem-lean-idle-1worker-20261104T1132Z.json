@@ -1,0 +1,120 @@
+{
+  "profile": "lean",
+  "phase": "idle",
+  "label": "1worker",
+  "env": {
+    "JAC_SERVE_WORKERS": "1"
+  },
+  "settle_s": 60.0,
+  "window_s": 30.0,
+  "machine": {
+    "cpu": "Intel(R) Celeron(R) N4020 CPU @ 1.10GHz",
+    "cores": "2",
+    "ram": "3492564 kB",
+    "kernel": "7.0.0-42-generic",
+    "session": "wayland",
+    "jac": "0.39.0",
+    "commit": "25472ce"
+  },
+  "budget": {
+    "pss_mb": 200,
+    "cpu_percent": 2
+  },
+  "pss_mb": {
+    "median": 83.1,
+    "min": 83.1,
+    "max": 83.2
+  },
+  "rss_mb": {
+    "median": 94.0,
+    "min": 93.9,
+    "max": 94.0
+  },
+  "cpu_percent": {
+    "median": 0.0,
+    "min": 0.0,
+    "max": 0.0
+  },
+  "runs": [
+    {
+      "cpu_percent": 0.0,
+      "pss_mb": 83.1,
+      "rss_mb": 93.9,
+      "groups": {
+        "server": {
+          "processes": 1,
+          "pss_mb": 83.1,
+          "rss_mb": 93.9
+        }
+      },
+      "startup_s": 3.0,
+      "stop_s": 0.0,
+      "postgres_stop_s": null,
+      "note": "PostgreSQL not counted: the lean app does not touch the graph yet, so no cluster starts for it"
+    },
+    {
+      "cpu_percent": 0.0,
+      "pss_mb": 83.1,
+      "rss_mb": 94.0,
+      "groups": {
+        "server": {
+          "processes": 1,
+          "pss_mb": 83.1,
+          "rss_mb": 94.0
+        }
+      },
+      "startup_s": 3.0,
+      "stop_s": 0.0,
+      "postgres_stop_s": null,
+      "note": "PostgreSQL not counted: the lean app does not touch the graph yet, so no cluster starts for it"
+    },
+    {
+      "cpu_percent": 0.0,
+      "pss_mb": 83.2,
+      "rss_mb": 94.0,
+      "groups": {
+        "server": {
+          "processes": 1,
+          "pss_mb": 83.2,
+          "rss_mb": 94.0
+        }
+      },
+      "startup_s": 3.0,
+      "stop_s": 0.0,
+      "postgres_stop_s": null,
+      "note": "PostgreSQL not counted: the lean app does not touch the graph yet, so no cluster starts for it"
+    },
+    {
+      "cpu_percent": 0.0,
+      "pss_mb": 83.2,
+      "rss_mb": 94.0,
+      "groups": {
+        "server": {
+          "processes": 1,
+          "pss_mb": 83.2,
+          "rss_mb": 94.0
+        }
+      },
+      "startup_s": 3.0,
+      "stop_s": 0.0,
+      "postgres_stop_s": null,
+      "note": "PostgreSQL not counted: the lean app does not touch the graph yet, so no cluster starts for it"
+    },
+    {
+      "cpu_percent": 0.0,
+      "pss_mb": 83.1,
+      "rss_mb": 94.0,
+      "groups": {
+        "server": {
+          "processes": 1,
+          "pss_mb": 83.1,
+          "rss_mb": 94.0
+        }
+      },
+      "startup_s": 3.0,
+      "stop_s": 0.0,
+      "postgres_stop_s": null,
+      "note": "PostgreSQL not counted: the lean app does not touch the graph yet, so no cluster starts for it"
+    }
+  ]
+}

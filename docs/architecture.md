@@ -2,7 +2,7 @@
 
 | Document control | Value |
 |---|---|
-| Version | 0.3.1 — pins Jac 0.39.0 as the phase 0 baseline (§3.2). 0.3 added the second purpose: a rigorous evaluation of Jac for desktop apps, with every shortcoming documented |
+| Version | 0.3.2 — the clean install runs in a fresh container on GitHub Actions instead of a VM, which does not fit the 4 GB laptop (owner, 2026-11-04). 0.3.1 pinned Jac 0.39.0 as the phase 0 baseline (§3.2). 0.3 added the second purpose: a rigorous evaluation of Jac for desktop apps, with every shortcoming documented |
 | Product name | **Briefly**, an AI standup assistant; app identifier `briefly` |
 | Date | 2026-11-02 |
 | Product owner | Amon |
@@ -925,7 +925,7 @@ Product gates are split into two tiers so a single-user pilot is not held to dis
 |---|---|---|
 | **Personal pilot** | Only the owner uses it, on their own laptop | Unit and integration tests for attribution, policy filtering, cancellation; a 30-question evaluation set from the owner's real repositories; secret-canary test; memory budget measured in a real standup; phone pairing and companion-only display verified |
 | **Before others use it** | Shared with teammates or published | Everything in §16.1–§16.3 below: full evaluation set and thresholds, receiver-side capture matrix for laptop-window modes, security suite, signed releases, SBOM |
-| **Jac evaluation (every phase)** | Always | Desktop artifact built with `jac build` and installed on the clean VM; every capability touched in the phase has an entry in the capability matrix (§21.3); findings logged with repros; canary suite green or updated; measurements taken with the §21.6 protocol; phase report written (§21.7) |
+| **Jac evaluation (every phase)** | Always | Desktop artifact built with `jac build` and installed in the clean-install job; every capability touched in the phase has an entry in the capability matrix (§21.3); findings logged with repros; canary suite green or updated; measurements taken with the §21.6 protocol; phase report written (§21.7) |
 
 ### 16.1 Test layers
 
@@ -963,7 +963,7 @@ These thresholds are acceptance criteria for the test set, not claims of perfect
 
 ### 16.3 Packaging and updates
 
-Packaging is part of the evaluation from phase 0, not a late polish step. Use `jac build`'s desktop artifact as delivered by Jac, install it on the clean VM, and record every manual step, missing dependency, privilege prompt (AfriCinemas' JI-005 is a known input), launcher or virtual-environment problem, and size. A `.deb` wrapper around the Jac artifact is built only to test what Jac's output still lacks for Ubuntu distribution; each gap is a finding. Declare PipeWire and portal dependencies explicitly. Local speech-model weights are an optional verified download with a visible size and license.
+Packaging is part of the evaluation from phase 0, not a late polish step. Use `jac build`'s desktop artifact as delivered by Jac, install it in a fresh `ubuntu:24.04` container on GitHub Actions (the clean-install job), and record every manual step, missing dependency, privilege prompt (AfriCinemas' JI-005 is a known input), launcher or virtual-environment problem, and size. A `.deb` wrapper around the Jac artifact is built only to test what Jac's output still lacks for Ubuntu distribution; each gap is a finding. Declare PipeWire and portal dependencies explicitly. Local speech-model weights are an optional verified download with a visible size and license.
 
 The developer build may need system packages; the user's installed application must not run compiler provisioning or attempt `sudo apt-get` at launch. Test the artifact on a clean machine without the developer checkout, virtual environment, or network access after required models are installed. The bundled Jac guide's launcher/venv details make this a specific packaging gate.
 
@@ -977,7 +977,7 @@ Estimates are rough single-engineer effort ranges, excluding external approvals.
 
 | Phase | Effort estimate | Deliverables | Exit gate |
 |---|---|---|---|
-| 0 — Jac baseline and feasibility | 1–2 weeks | Findings log and capability matrix set up; known JI inputs re-tested; scaffold with `jac create`; desktop and lean profiles built and measured; clean-VM install of the desktop artifact; phone pairing; streaming speech-to-text trial; screenshot portal; byLLM streaming to both displays | Baseline report (§21.7); memory, companion display, speech, and streaming demonstrated or findings logged and profile chosen for daily use |
+| 0 — Jac baseline and feasibility | 1–2 weeks | Findings log and capability matrix set up; known JI inputs re-tested; scaffold with `jac create`; desktop and lean profiles built and measured; clean install of the desktop artifact (CI); phone pairing; streaming speech-to-text trial; screenshot portal; byLLM streaming to both displays | Baseline report (§21.7); memory, companion display, speech, and streaming demonstrated or findings logged and profile chosen for daily use |
 | 1 — preparation | 1–2 weeks | Permissions; Git/GitHub collection; graph model and walkers; evidence excerpts; standup brief; prepared Q&A; typed Q&A on both displays | Correct provenance/attribution; useful brief used in a real standup; phase report |
 | 2 — live assistance | 1–2 weeks | Audio capture with source tagging; speech-to-text adapter; relevance detection; prepared-answer matching; screen reading; cancellation; cost display; desktop window SDK exercised (§21.3) | Personal pilot gates (§16) pass in real standups; phase report |
 | 3 — evaluation report | 3–5 days | Re-run of the whole measurement protocol and canary suite on the latest compiler; final evaluation report; upstream issue drafts for the owner to review | Final report complete; every open finding has a repro and a status |
@@ -991,7 +991,7 @@ Approximate effort to the final evaluation report is **5–8 engineer-weeks**, c
 | Spike | Concrete experiment | Pass / decision |
 |---|---|---|
 | S0 — Jac baseline | Re-test JI-002, JI-005, JI-009, JI-019, JI-033, JI-045, JI-054 on the pinned compiler; scaffold with `jac create`; `jac check`, `jac test`, `jac fmt`, hot reload, `jac browse` on the scaffold | Known inputs classified as still-holding or fixed; still-holding ones get canaries |
-| S1 — desktop profile and memory | `jac build` desktop artifact with graph persistence and the planned Python dependencies; install on the clean VM; measure RSS per process (host, WebKit, server, PostgreSQL) with Meet and VS Code open on the owner's laptop; same for the lean profile; exercise the window SDK (size, always-on-top, second window, close/restore) | Numbers recorded; desktop within §13 budget, or a performance finding logged and the daily-use profile chosen |
+| S1 — desktop profile and memory | `jac build` desktop artifact with graph persistence and the planned Python dependencies; install in the clean-install job; measure RSS per process (host, WebKit, server, PostgreSQL) with Meet and VS Code open on the owner's laptop; same for the lean profile; exercise the window SDK (size, always-on-top, second window, close/restore) | Numbers recorded; desktop within §13 budget, or a performance finding logged and the daily-use profile chosen |
 | S2 — screen privacy | Phone companion: laptop shows no content during full-screen share. Laptop-window modes: receiver recordings later, only if FR-08a is wanted | Companion mode passes; laptop modes declared only after their tests |
 | S3 — speech | Capture meeting output and mic separately; stream to two or three speech-to-text services and one local small model while a real call runs; score names and code terms | Pick the default service; confirm Claude's API has no live-audio input that would make a separate service unnecessary |
 | S4 — streaming and cost | byLLM streaming, cancellation, timeouts, usage, image input, and structured output, delivered through Jac events/WebSockets to the desktop window and the phone; SDK path only for what fails; record token and audio usage for three real standups | Meet first-useful-output target; each byLLM or transport gap logged; replace §10.6 planning volumes with measured ones |
@@ -1110,7 +1110,7 @@ Each row is exercised by the product, given a verdict per compiler release (**Wo
 | Several clients of one app | Desktop window plus phone | Per-client auth, LAN binding configuration | — |
 | Test runner (`jac test`) | Unit, integration, canaries | Strict mode, fixtures, async tests, CI exit codes | JI-001 |
 | Tooling (`jac check`, `jac fmt`, `jac browse`, editor support) | Daily development | Diagnostic quality, formatter safety, browser QA on the desktop UI | `--lintfix` mangling note, JI-045 |
-| Build and packaging (`jac build`) | S1, clean VM, every phase | Privilege prompts, CPU requirements, artifact size, launcher, offline start | JI-002, JI-005 |
+| Build and packaging (`jac build`) | S1, the clean-install job, every phase | Privilege prompts, CPU requirements, artifact size, launcher, offline start | JI-002, JI-005 |
 | Bundled guides | Every phase | Each guide claim used by the project is checked against behavior | — |
 | Upgrades | Every new release | Breaking changes, migration of graph data, cache invalidation | — |
 
@@ -1173,7 +1173,7 @@ Each row is exercised by the product, given a verdict per compiler release (**Wo
 1. Read the release notes and breaking-changes list; note anything touching the §21.3 rows.
 2. Bump the pinned version on a branch and clear compiled caches (moving `.jac/cache` aside, per the stale-cache note).
 3. Run `jac check` and the whole `jac test` suite, canaries included.
-4. Build the desktop artifact and install it on the clean VM.
+4. Build the desktop artifact and run the clean-install job.
 5. Run the measurement protocol (§21.6).
 6. Re-apply known workarounds only after confirming they are still needed.
 7. Update finding statuses and the capability-matrix verdicts, then write the release report (§21.7).

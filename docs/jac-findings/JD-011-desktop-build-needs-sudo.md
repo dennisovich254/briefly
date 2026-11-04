@@ -33,11 +33,11 @@ The build stops with the missing packages and the exact command to install them 
 
 ## Analysis
 
-JI-005 holds: the desktop target needs root once per machine. The traceback makes it look like a crash rather than a missing prerequisite, which matters for the clean-machine install in 1.2 and for anyone following `CONTRIBUTING.md`.
+JI-005 holds: the desktop target needs root once per machine. The traceback makes it look like a crash rather than a missing prerequisite, which matters for the clean-machine install in 1.3 and for anyone following `CONTRIBUTING.md`.
 
 ## Workaround
 
-`CONTRIBUTING.md` (setup step 4) and the CI `build-desktop` job install the packages first. `scripts/doctor.sh` could check them; noted for 1.2.
+`CONTRIBUTING.md` (setup step 4) and the CI `build-desktop` job install the packages first. `scripts/doctor.sh` could check them; noted for 1.3.
 
 ## Canary
 

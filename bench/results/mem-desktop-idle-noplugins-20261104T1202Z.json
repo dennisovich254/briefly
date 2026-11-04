@@ -1,0 +1,90 @@
+{
+  "profile": "desktop",
+  "phase": "idle",
+  "label": "noplugins",
+  "env": {},
+  "settle_s": 60.0,
+  "window_s": 30.0,
+  "machine": {
+    "cpu": "Intel(R) Celeron(R) N4020 CPU @ 1.10GHz",
+    "cores": "2",
+    "ram": "3492564 kB",
+    "kernel": "7.0.0-42-generic",
+    "session": "wayland",
+    "jac": "0.39.0",
+    "commit": "25472ce"
+  },
+  "budget": {
+    "pss_mb": 300,
+    "cpu_percent": 2
+  },
+  "pss_mb": {
+    "median": 308.2,
+    "min": 281.2,
+    "max": 335.3
+  },
+  "rss_mb": {
+    "median": 546.5,
+    "min": 517.0,
+    "max": 576.1
+  },
+  "cpu_percent": {
+    "median": 0.0,
+    "min": 0.03,
+    "max": 0.05
+  },
+  "runs": [
+    {
+      "cpu_percent": 0.03,
+      "pss_mb": 335.3,
+      "rss_mb": 576.1,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 123.4,
+          "rss_mb": 194.5
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 110.2,
+          "rss_mb": 202.2
+        },
+        "postgres": {
+          "processes": 11,
+          "pss_mb": 101.7,
+          "rss_mb": 179.4
+        }
+      },
+      "startup_s": 5.6,
+      "stop_s": 6.5,
+      "postgres_stop_s": 6.5,
+      "note": ""
+    },
+    {
+      "cpu_percent": 0.05,
+      "pss_mb": 281.2,
+      "rss_mb": 517.0,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 71.3,
+          "rss_mb": 142.8
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 109.0,
+          "rss_mb": 201.6
+        },
+        "postgres": {
+          "processes": 11,
+          "pss_mb": 100.9,
+          "rss_mb": 172.6
+        }
+      },
+      "startup_s": 4.4,
+      "stop_s": 2.3,
+      "postgres_stop_s": 2.3,
+      "note": ""
+    }
+  ]
+}
