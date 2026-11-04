@@ -1,0 +1,41 @@
+name: Set up Jac
+description: >-
+  Install the Jac version pinned in .jac-version (checksum-verified by scripts/install_jac.sh),
+  restore caches, and optionally run `jac install`.
+inputs:
+  install-deps:
+    description: Run `jac install` (the project's Python and npm dependencies).
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Cache Jac binary and runtime
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.local/bin/jac
+          ~/.cache/jac/rt
+        key: jac-bin-${{ runner.os }}-${{ hashFiles('.jac-version') }}
+
+    - name: Install Jac (pinned)
+      shell: bash
+      run: |
+        pinned="$(tr -d '[:space:]' < .jac-version)"
+        if ! ~/.local/bin/jac --version 2>/dev/null | grep -q "${pinned}"; then
+          scripts/install_jac.sh
+        fi
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Cache project dependencies
+      if: inputs.install-deps == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          .jac/venv
+          .jac/client/node_modules
+        key: jac-deps-${{ runner.os }}-${{ hashFiles('.jac-version', 'jac.toml', 'jac.lock') }}
+
+    - name: jac install
+      if: inputs.install-deps == 'true'
+      shell: bash
+      run: jac install

@@ -65,12 +65,18 @@ else fail "git remote 'origin' missing" "git remote add origin https://github.co
 if [[ ! -e .env ]] || git check-ignore -q .env; then pass ".env is git-ignored"
 else fail ".env exists but is NOT git-ignored" "add .env to .gitignore"; fi
 
-# 6. pre-commit and gitleaks (the hooks arrive in 0.5)
+# 6. pre-commit, its hooks, and the binaries they run
 if command -v pre-commit >/dev/null 2>&1; then pass "pre-commit $(pre-commit --version | awk '{print $2}')"
 else fail "pre-commit not installed" "uv tool install pre-commit   (uv: github.com/astral-sh/uv/releases)"; fi
 
+if [[ -f .git/hooks/pre-commit && -f .git/hooks/commit-msg && -f .git/hooks/pre-push ]]; then pass "Git hooks installed"
+else fail "Git hooks not installed" "pre-commit install"; fi
+
 if command -v gitleaks >/dev/null 2>&1; then pass "gitleaks $(gitleaks version 2>/dev/null)"
-else fail "gitleaks not installed" "download gitleaks_<ver>_linux_x64.tar.gz from github.com/gitleaks/gitleaks/releases, verify its checksum, copy gitleaks to ~/.local/bin"; fi
+else fail "gitleaks not installed" "scripts/install_gitleaks.sh"; fi
+
+if command -v actionlint >/dev/null 2>&1; then pass "actionlint $(actionlint -version 2>/dev/null | head -1)"
+else fail "actionlint not installed" "scripts/install_actionlint.sh"; fi
 
 # 7. GitHub CLI, authenticated (needed for PRs and pushing)
 if ! command -v gh >/dev/null 2>&1; then

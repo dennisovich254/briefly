@@ -6,6 +6,9 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# The throwaway repositories must not inherit GIT_DIR and friends from a calling hook.
+# shellcheck disable=SC2046
+unset $(git rev-parse --local-env-vars)
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 passed=0; failed=0
 
@@ -71,12 +74,19 @@ bundled_bun() {  # bundled_bun runs|crashes
 }
 
 # A throwaway repo holding only the doctor and a .jac-version, with the fake jac first on PATH.
+# Git's repository-local variables (GIT_DIR and friends, which Git exports to hooks) are dropped
+# first: inherited from a hook run in a linked worktree, GIT_DIR made `git init` reinitialise the
+# real repository and set core.bare=true.
 doctor_with() {  # doctor_with <.jac-version content>; prints the doctor's output
     local repo="$tmp/repo-$RANDOM"
     mkdir -p "$repo/scripts" && cp "$ROOT/scripts/doctor.sh" "$repo/scripts/"
-    git -C "$repo" init -q
-    [[ -n "$1" ]] && echo "$1" > "$repo/.jac-version"
-    PATH="$tmp/doctor-bin:$PATH" NO_COLOR=1 "$repo/scripts/doctor.sh" 2>&1
+    (
+        # shellcheck disable=SC2046
+        unset $(git rev-parse --local-env-vars)
+        git -C "$repo" init -q
+        [[ -n "$1" ]] && echo "$1" > "$repo/.jac-version"
+        PATH="$tmp/doctor-bin:$PATH" NO_COLOR=1 "$repo/scripts/doctor.sh" 2>&1
+    )
 }
 bundled_bun runs
 out_ok="$(doctor_with "$pinned")"
@@ -90,6 +100,14 @@ check "passes the bun check when the runtime's bundled bun runs" grep -q "PASS  
 bundled_bun crashes
 out_crash="$(JAC_BUN="$tmp/other-bun/bun" doctor_with "$pinned")"
 check "fails the bun check when the bundled bun crashes, even with JAC_BUN set (JD-001)" grep -q "FAIL  Jac's bundled bun does not run on this CPU" <<<"$out_crash"
+# A hook run in a linked worktree inherits GIT_DIR=<repo>/.git/worktrees/<name>.
+bundled_bun runs
+outer="$tmp/outer-repo"
+git init -q "$outer"
+git -C "$outer" -c user.name=t -c user.email=t@example.invalid commit -q --allow-empty -m seed
+git -C "$outer" worktree add -q "$tmp/outer-worktree" HEAD 2>/dev/null
+GIT_DIR="$(git -C "$tmp/outer-worktree" rev-parse --absolute-git-dir)" doctor_with "$pinned" >/dev/null
+check "leaves the caller's repository alone when a hook's GIT_DIR is inherited" test "$(git -C "$outer" config --get core.bare)" = false
 
 echo
 echo "$passed passed, $failed failed"
