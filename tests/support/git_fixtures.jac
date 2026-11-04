@@ -8,10 +8,10 @@ commit, so SHAs are reproducible. Callers own the directory: create fixtures ins
 import os;
 import subprocess;
 
-glob START_EPOCH: int = 1767603600;  # 2026-01-05T09:00:00Z
-glob DEV: tuple[str, str] = ("Fixture Dev", "dev@example.invalid");
-glob OTHER: tuple[str, str] = ("Other Dev", "other@example.invalid");
-glob PAIR: str = "Pair Dev <pair@example.invalid>";
+glob START_EPOCH: int = 1767603600,  # 2026-01-05T09:00:00Z
+     DEV: tuple[str, str] = ("Fixture Dev", "dev@example.invalid"),
+     OTHER: tuple[str, str] = ("Other Dev", "other@example.invalid"),
+     PAIR: str = "Pair Dev <pair@example.invalid>";
 
 obj GitFixture {
     has path: str,
@@ -37,10 +37,10 @@ obj GitFixture {
 
     """Run git in the repository; returns stdout without its trailing newline."""
     def git(
-        args: list[str], check: bool = True, extra_env: dict[str, str] = {}
+        args: list[str], check: bool = True, extra_env: dict[str, str] | None = None
     ) -> str {
         env = self.env();
-        env.update(extra_env);
+        env.update(extra_env or {});
         done = subprocess.run(
             ["git", "-C", self.path] + args,
             env=env,
@@ -54,7 +54,7 @@ obj GitFixture {
         return done.stdout.rstrip("\n");
     }
 
-    def write(rel: str, text: str) -> None {
+    def write(rel: str, text: str) {
         target = os.path.join(self.path, rel);
         os.makedirs(os.path.dirname(target), exist_ok=True);
         with open(target, "w") as fh {
@@ -64,7 +64,7 @@ obj GitFixture {
 
     """Stage everything and commit it at the next fixture hour; returns the new SHA."""
     def commit(
-        message: str, author: tuple[str, str] = DEV, trailers: list[str] = []
+        message: str, author: tuple[str, str] = DEV, trailers: list[str] | None = None
     ) -> str {
         stamp = f"@{START_EPOCH + self.commits * 3600} +0000";
         self.commits += 1;

@@ -28,16 +28,15 @@ with entry {
     print(f"root={ping_status('main.jac')}");
     print(f"nested={ping_status(os.path.join('hosts', 'web', 'main.jac'))}");
 }
-""";
-
-glob ENTRY_SRC: str = """import from core.ping { ping }
+""",
+     ENTRY_SRC: str = """import from core.ping { ping }
 
 with entry {
     _ = ping;
 }
 """;
 
-def write(path: str, text: str) -> None {
+def write(path: str, text: str) {
     os.makedirs(os.path.dirname(path), exist_ok=True);
     with open(path, "w") as fh {
         fh.write(text);

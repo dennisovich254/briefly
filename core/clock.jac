@@ -7,12 +7,12 @@ scripts/test.sh sets, so shipped code cannot move time.
 import os;
 import from datetime { datetime, timedelta, timezone }
 
-glob CONTROL_ENV: str = "BRIEFLY_CLOCK_CONTROL";
-glob _frozen: datetime | None = None;
+glob CONTROL_ENV: str = "BRIEFLY_CLOCK_CONTROL",
+     _frozen: datetime | None = None;
 
 obj ClockControlRefused(RuntimeError) {}
 
-def _require_control -> None {
+def _require_control {
     if os.environ.get(CONTROL_ENV) != "1" {
         raise ClockControlRefused(f"clock control needs {CONTROL_ENV}=1 (tests only)");
     }
@@ -27,7 +27,7 @@ def now -> datetime {
 }
 
 """Pin now() to `at` (timezone-aware) until reset()."""
-def freeze(at: datetime) -> None {
+def freeze(at: datetime) {
     _require_control();
     if at.tzinfo is None {
         raise ValueError("freeze needs a timezone-aware datetime");
@@ -36,7 +36,7 @@ def freeze(at: datetime) -> None {
 }
 
 """Move a frozen clock forward by `delta`."""
-def advance(delta: timedelta) -> None {
+def advance(delta: timedelta) {
     _require_control();
     if _frozen is None {
         raise ClockControlRefused("advance needs a frozen clock; call freeze first");
@@ -45,7 +45,7 @@ def advance(delta: timedelta) -> None {
 }
 
 """Return now() to the system clock."""
-def reset -> None {
+def reset {
     _require_control();
     _frozen = None;
 }
