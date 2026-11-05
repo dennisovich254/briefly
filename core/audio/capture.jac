@@ -91,6 +91,28 @@ def list_sources -> list[AudioSource] {
     return apps + mics;
 }
 
+"""The node name in a `pw-metadata 0 default.audio.source` line, or "" when there is none.
+
+The line reads `update: id:0 key:'default.audio.source' value:'{"name":"<node>"}' type:'…'`.
+"""
+def default_source_name(output: str) -> str {
+    for line in output.splitlines() {
+        if "value:'" not in line {
+            continue;
+        }
+        value = line.split("value:'", 1)[1].split("'", 1)[0];
+        try {
+            parsed = json.loads(value);
+        } except ValueError {
+            continue;
+        }
+        if isinstance(parsed, dict) and parsed.get("name") {
+            return str(parsed["name"]);
+        }
+    }
+    return "";
+}
+
 """The default microphone, as PipeWire's session manager has chosen it; None when there is none."""
 def default_microphone -> AudioSource | None {
     try {
@@ -103,18 +125,7 @@ def default_microphone -> AudioSource | None {
     } except (OSError, subprocess.TimeoutExpired) {
         return None;
     }
-    name = "";
-    for line in done.stdout.splitlines() {
-        if "value:'" in line {
-            value = line.split("value:'", 1)[1].rsplit("'", 1)[0];
-            try {
-                parsed = json.loads(value);
-                name = str(parsed.get("name", "")) if isinstance(parsed, dict) else "";
-            } except ValueError {
-                name = "";
-            }
-        }
-    }
+    name = default_source_name(done.stdout);
     for source in list_sources() {
         if source.kind == "mic" and source.detail == name {
             return source;

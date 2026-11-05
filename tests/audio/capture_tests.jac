@@ -93,7 +93,7 @@ obj Fixture {
             [
                 "pw-loopback",
                 f"--capture-props=node.name={self.speaker()} media.class=Audio/Sink",
-                f"--playback-props=node.name={self.speaker()}-out node.passive=true"
+                f"--playback-props=node.name={self.speaker()}-out node.passive=true node.autoconnect=false"
             ]
         );
         self.launch(
@@ -180,6 +180,33 @@ def fixture(folder: str) -> Fixture {
     made = Fixture(tag=uuid.uuid4().hex[:8], folder=folder);
     made.open();
     return made;
+}
+
+test "the default microphone's name is read from pw-metadata's output" {
+    line = "update: id:0 key:'default.audio.source' value:'{\"name\":\"alsa_input.pci-0000_00_0e.0.analog-stereo\"}' type:'Spa:String:JSON'";
+    out = "Found \"default\" metadata 41\n" + line + "\n";
+    assert capture.default_source_name(out)
+        == "alsa_input.pci-0000_00_0e.0.analog-stereo";
+    assert capture.default_source_name("Found \"default\" metadata 41\n") == "";
+}
+
+test "when the session reports a default source, it is the one found (read-only)" {
+    if not pipewire_running() {
+        testskip("no PipeWire daemon answers");
+    }
+    reported = capture.default_source_name(
+        subprocess.run(
+            ["pw-metadata", "0", "default.audio.source"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        ).stdout
+    );
+    if not reported {
+        testskip("this session reports no default source");
+    }
+    mic = capture.default_microphone();
+    assert mic is not None and mic.detail == reported , f"{reported!r} -> {mic}";
 }
 
 test "the ring buffer keeps only the most recent audio" {
