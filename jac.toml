@@ -21,6 +21,13 @@ entry-point = "main"   # at the root: JD-002
 [serve]
 host = "127.0.0.1"
 
+# One worker process. Briefly is a single-user local app whose live state is in process memory: the
+# phone session (core/phone/link.jac) and the open answer streams (core/ai/answer.jac). With Jac's
+# default (as many workers as fit in free memory) a phone's requests land on workers that never saw
+# its session and are refused. One worker also keeps the lean profile inside its memory budget.
+[serve.workers]
+count = 1
+
 # Keep anchor-free modules on the server: Jac compiles them native by default, and natively
 # core/clock.jac segfaults or returns wrong times (JD-004). Remove once the JD-004 canary shows a fix.
 [placement]
