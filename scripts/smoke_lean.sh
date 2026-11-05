@@ -32,6 +32,8 @@ check() {  # check <description> <command...>
 }
 check "/healthz is ok"            bash -c "curl -fs '$base/healthz' | grep -q '\"ok\"'"
 check "the page has the title"    bash -c "curl -fs '$base/' | grep -q '<title>Briefly</title>'"
+check "listens on loopback only"   bash -c "ss -Hltn 'sport = :8000' | awk '{print \$4}' | grep -q . && ! ss -Hltn 'sport = :8000' | awk '{print \$4}' | grep -v '^127\\.0\\.0\\.1:'"
+check "runs one worker process"   bash -c "[ \"\$(ss -Hltnp 'sport = :8000' | grep -o 'pid=[0-9]*' | sort -u | wc -l)\" = 1 ]"
 check "app_info answers Briefly"  bash -c "curl -fs -X POST -H 'Content-Type: application/json' -d '{}' '$base/function/app_info' | grep -q '\"name\": \"Briefly\"'"
 
 if (( failures > 0 )); then tail -20 "$work/server.log" >&2; exit 1; fi

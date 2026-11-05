@@ -1,10 +1,12 @@
 name: Set up Jac
 description: >-
   Install the Jac version pinned in .jac-version (checksum-verified by scripts/install_jac.sh),
-  restore caches, and optionally run `jac install`.
+  restore caches, and optionally run `jac install --dev`.
 inputs:
   install-deps:
-    description: Run `jac install` (the project's Python and npm dependencies).
+    description: >-
+      Run `jac install --dev` (the project's Python and npm dependencies, with the dev ones: the
+      type-check gate checks bench/ scripts that import them).
     default: "true"
 runs:
   using: composite
@@ -35,7 +37,7 @@ runs:
           .jac/client/node_modules
         key: jac-deps-${{ runner.os }}-${{ hashFiles('.jac-version', 'jac.toml', 'jac.lock') }}
 
-    - name: jac install
+    - name: jac install --dev
       if: inputs.install-deps == 'true'
       shell: bash
-      run: jac install
+      run: jac install --dev
