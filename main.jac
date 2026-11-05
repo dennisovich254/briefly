@@ -5,6 +5,9 @@ nested entry (JD-002). Move it back once the JD-002 canary shows the fix.
 """
 
 import from ui.App { App }
+# The answer stream has no client RPC stub, so it registers through this entry-module import
+# (jac-sv-streaming, "Registration").
+import from core.ai.answer { answer_cancel, answer_stream }
 
 def:pub app -> JsxElement {
     <App profile="lean"/>

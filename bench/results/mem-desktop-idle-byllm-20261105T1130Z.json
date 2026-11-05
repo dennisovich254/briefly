@@ -1,0 +1,193 @@
+{
+  "profile": "desktop",
+  "phase": "idle",
+  "label": "byllm",
+  "env": {},
+  "settle_s": 60.0,
+  "window_s": 30.0,
+  "machine": {
+    "cpu": "Intel(R) Celeron(R) N4020 CPU @ 1.10GHz",
+    "cores": "2",
+    "ram": "3492556 kB",
+    "kernel": "7.0.0-42-generic",
+    "session": "wayland",
+    "jac": "0.39.1",
+    "commit": "949f22b"
+  },
+  "budget": {
+    "pss_mb": 300,
+    "cpu_percent": 2
+  },
+  "pss_mb": {
+    "median": 373.2,
+    "min": 370.1,
+    "max": 375.4
+  },
+  "rss_mb": {
+    "median": 643.8,
+    "min": 636.1,
+    "max": 645.8
+  },
+  "uss_mb": {
+    "median": 254.2,
+    "min": 254.1,
+    "max": 256.4
+  },
+  "cpu_percent": {
+    "median": 0.1,
+    "min": 0.05,
+    "max": 0.07
+  },
+  "runs": [
+    {
+      "cpu_percent": 0.05,
+      "pss_mb": 370.1,
+      "rss_mb": 636.1,
+      "uss_mb": 254.1,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 150.5,
+          "rss_mb": 221.0,
+          "uss_mb": 104.0
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 114.0,
+          "rss_mb": 203.8,
+          "uss_mb": 68.0
+        },
+        "postgres": {
+          "processes": 12,
+          "pss_mb": 105.6,
+          "rss_mb": 211.3,
+          "uss_mb": 82.1
+        }
+      },
+      "startup_s": 6.7,
+      "stop_s": 2.8,
+      "postgres_stop_s": 2.8,
+      "note": ""
+    },
+    {
+      "cpu_percent": 0.07,
+      "pss_mb": 373.0,
+      "rss_mb": 643.0,
+      "uss_mb": 254.2,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 152.5,
+          "rss_mb": 224.9,
+          "uss_mb": 104.6
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 114.8,
+          "rss_mb": 206.8,
+          "uss_mb": 67.5
+        },
+        "postgres": {
+          "processes": 12,
+          "pss_mb": 105.7,
+          "rss_mb": 211.3,
+          "uss_mb": 82.1
+        }
+      },
+      "startup_s": 4.4,
+      "stop_s": 2.3,
+      "postgres_stop_s": 2.3,
+      "note": ""
+    },
+    {
+      "cpu_percent": 0.07,
+      "pss_mb": 375.4,
+      "rss_mb": 645.8,
+      "uss_mb": 256.4,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 152.5,
+          "rss_mb": 225.0,
+          "uss_mb": 104.5
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 117.2,
+          "rss_mb": 209.6,
+          "uss_mb": 69.8
+        },
+        "postgres": {
+          "processes": 12,
+          "pss_mb": 105.7,
+          "rss_mb": 211.2,
+          "uss_mb": 82.1
+        }
+      },
+      "startup_s": 4.2,
+      "stop_s": 2.5,
+      "postgres_stop_s": 2.5,
+      "note": ""
+    },
+    {
+      "cpu_percent": 0.05,
+      "pss_mb": 373.2,
+      "rss_mb": 643.8,
+      "uss_mb": 254.2,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 152.5,
+          "rss_mb": 225.0,
+          "uss_mb": 104.5
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 115.1,
+          "rss_mb": 207.6,
+          "uss_mb": 67.6
+        },
+        "postgres": {
+          "processes": 12,
+          "pss_mb": 105.6,
+          "rss_mb": 211.2,
+          "uss_mb": 82.1
+        }
+      },
+      "startup_s": 4.2,
+      "stop_s": 2.3,
+      "postgres_stop_s": 2.3,
+      "note": ""
+    },
+    {
+      "cpu_percent": 0.05,
+      "pss_mb": 374.8,
+      "rss_mb": 645.0,
+      "uss_mb": 255.6,
+      "groups": {
+        "host": {
+          "processes": 1,
+          "pss_mb": 152.4,
+          "rss_mb": 225.0,
+          "uss_mb": 104.3
+        },
+        "webkit": {
+          "processes": 2,
+          "pss_mb": 116.8,
+          "rss_mb": 209.0,
+          "uss_mb": 69.3
+        },
+        "postgres": {
+          "processes": 12,
+          "pss_mb": 105.6,
+          "rss_mb": 211.0,
+          "uss_mb": 82.0
+        }
+      },
+      "startup_s": 4.2,
+      "stop_s": 2.5,
+      "postgres_stop_s": 2.6,
+      "note": ""
+    }
+  ]
+}
