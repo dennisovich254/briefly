@@ -52,6 +52,7 @@ typescript = "^5.3.3"
 [dev-dependencies.pypi]
 watchdog = ">=3.0.0"
 segno = ">=1.6.6"   # QR codes in the terminal for bench/phone_link.jac (plan 1.5)
+vosk = "~=0.3"     # the local speech-to-text model for spike 1.6 (core/stt/local_vosk.jac)
 
 [client.app_meta_data]
 title = "Briefly"
@@ -81,3 +82,7 @@ min_height = 360
 # with "Plugin 'jac.window' is not registered" (JD-022).
 [desktop.plugins]
 window = true
+
+# The cloud speech-to-text streams (core/stt/cloud.jac, plan 1.6).
+[dependencies.pypi]
+websockets = "~=17.4"

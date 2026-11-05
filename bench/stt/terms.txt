@@ -1,0 +1,30 @@
+# Question-critical names and code terms in standup_script.txt (plan 1.6, S3). One term per line:
+# the term as it is fed to the services as vocabulary, then " | " and any other spellings that count
+# as correct in a transcript. Matching ignores case, punctuation and hyphens, and reads number
+# words as digits ("thirty six" = "36"), so "JD-036", "JD 36" and "JD thirty six" all match "jd 36".
+Amon
+Jac
+JD-035 | jd 35
+JD-036 | jd 36
+JD-038 | jd 38
+JD-024 | jd 24
+pull request 17 | pr 17 | pull request seventeen
+10602 | 10,602 | ten thousand six hundred and two
+QR code
+LAN
+Vite
+Wi-Fi | wifi
+PipeWire | pipe wire
+WirePlumber | wire plumber
+Deepgram | deep gram
+AssemblyAI | assembly ai
+Vosk
+Claude
+Haiku
+byLLM | by llm
+PostgreSQL | postgres
+API keys
+ADR 0003 | adr 3 | adr 0 0 0 3
+iPhone
+Safari
+server sent events
