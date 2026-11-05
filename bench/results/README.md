@@ -2,7 +2,7 @@
 
 Raw output of `bench/mem.jac`, one JSON file per batch, named `mem-<profile>-<phase>[-<label>]-<UTC time>.json`. Each file holds the machine, the commit, the budget, every run, and the median and range. Measured on the owner's laptop (Celeron N4020, 2 cores, 3.3 GiB, Ubuntu 26.04 GNOME on Wayland), jac 0.39.0.
 
-## Current (plan 1.2, ADR 0001)
+## Jac 0.39.0 (plan 1.2, ADR 0001)
 
 | File | What |
 |---|---|
@@ -10,7 +10,14 @@ Raw output of `bench/mem.jac`, one JSON file per batch, named `mem-<profile>-<ph
 | `mem-lean-idle-20261104T1228Z.json` | Lean, Jac's default worker count, which picked 1 worker at that time: PSS 84.3 MB |
 | `mem-lean-idle-1worker-20261104T1236Z.json` | Lean, `JAC_SERVE_WORKERS=1`: PSS 84.3 MB |
 
-## Earlier batches of the same day, kept for the record
+## Jac 0.39.1 (release report: docs/jac-findings/reports/release-0.39.1.md)
+
+| File | What |
+|---|---|
+| `mem-desktop-idle-20261105T1016Z.json` | Desktop on 0.39.1: PSS median 353.2 MB, USS 237.4 MB |
+| `mem-lean-idle-1worker-20261105T1024Z.json` | Lean, one worker, on 0.39.1: PSS 94.5 MB |
+
+## Earlier batches of 2026-11-04, kept for the record
 
 | File | What |
 |---|---|

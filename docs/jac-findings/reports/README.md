@@ -9,4 +9,6 @@ Reports of the Jac evaluation (architecture §21.7):
 
 Each report gives the capability-matrix verdicts and what changed since the last report; new, fixed and still-open findings; the measurement table compared with the previous one; and any profile decision taken.
 
-No reports yet.
+Reports so far:
+
+- [release-0.39.1.md](release-0.39.1.md): the upgrade from 0.39.0 to 0.39.1 (2026-11-05).

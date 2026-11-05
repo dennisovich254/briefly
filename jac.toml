@@ -2,7 +2,7 @@
 name = "briefly"
 version = "0.1.0"
 description = "An AI standup assistant for Ubuntu, built in Jac."
-jac-version = "==0.39.0"
+jac-version = "==0.39.1"
 default-app = "desktop"
 
 # Two run profiles over one codebase (architecture §6.1): the desktop profile is the
