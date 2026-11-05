@@ -1,0 +1,192 @@
+{
+  "model": "claude-haiku-5-5",
+  "runs": 20,
+  "spent_usd": 0.0012,
+  "cold_first_sentence_s": 10.38,
+  "first_sentence_s": {
+    "p50": 1.162,
+    "p95": 1.253
+  },
+  "samples": [
+    {
+      "first_delta_s": 10.23,
+      "first_sentence_s": 10.38,
+      "total_s": 10.619,
+      "prompt_tokens": 178,
+      "completion_tokens": 82,
+      "cost": 5.9e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.826,
+      "first_sentence_s": 1.212,
+      "total_s": 1.239,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.791,
+      "first_sentence_s": 1.225,
+      "total_s": 1.253,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.815,
+      "first_sentence_s": 1.087,
+      "total_s": 1.251,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.811,
+      "first_sentence_s": 1.239,
+      "total_s": 1.272,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.834,
+      "first_sentence_s": 1.227,
+      "total_s": 1.258,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.783,
+      "first_sentence_s": 0.944,
+      "total_s": 1.202,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.827,
+      "first_sentence_s": 0.969,
+      "total_s": 1.169,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.898,
+      "first_sentence_s": 1.016,
+      "total_s": 1.27,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.852,
+      "first_sentence_s": 1.253,
+      "total_s": 1.291,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.791,
+      "first_sentence_s": 0.95,
+      "total_s": 1.134,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.864,
+      "first_sentence_s": 1.228,
+      "total_s": 1.273,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.828,
+      "first_sentence_s": 1.221,
+      "total_s": 1.254,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.771,
+      "first_sentence_s": 0.945,
+      "total_s": 1.133,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.898,
+      "first_sentence_s": 1.087,
+      "total_s": 1.335,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.797,
+      "first_sentence_s": 0.963,
+      "total_s": 1.213,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.825,
+      "first_sentence_s": 1.103,
+      "total_s": 1.353,
+      "prompt_tokens": 178,
+      "completion_tokens": 75,
+      "cost": 5.5e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.821,
+      "first_sentence_s": 1.485,
+      "total_s": 1.53,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.778,
+      "first_sentence_s": 1.179,
+      "total_s": 1.216,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    },
+    {
+      "first_delta_s": 0.781,
+      "first_sentence_s": 1.162,
+      "total_s": 1.204,
+      "prompt_tokens": 178,
+      "completion_tokens": 80,
+      "cost": 5.8e-05,
+      "outcome": "ok"
+    }
+  ]
+}

@@ -17,6 +17,20 @@ Raw output of `bench/mem.jac`, one JSON file per batch, named `mem-<profile>-<ph
 | `mem-desktop-idle-20261105T1016Z.json` | Desktop on 0.39.1: PSS median 353.2 MB, USS 237.4 MB |
 | `mem-lean-idle-1worker-20261105T1024Z.json` | Lean, one worker, on 0.39.1: PSS 94.5 MB |
 
+## Jac 0.39.1 with byLLM imported (plan 1.4)
+
+| File | What |
+|---|---|
+| `mem-desktop-idle-byllm-20261105T1130Z.json` | Desktop once `core/ai/answer.jac` imports byLLM: PSS 373.2 MB (host 152.5, up 17) |
+| `mem-lean-idle-1worker-byllm-20261105T1138Z.json` | Lean, one worker, with byLLM imported: PSS 97.9 MB (up 3.4) |
+
+## Live answer latency (plan 1.4, ADR 0002)
+
+| File | What |
+|---|---|
+| `stream-latency-20261105T1229Z.json` | 20 streamed answers on `claude-haiku-5-5`: first readable sentence cold 10.4 s, warm p50 1.16 s, p95 1.25 s; $0.0012 |
+| `stream-latency-20261105T1231Z.json` | The same run repeated (it started by mistake when another script imported the bench): warm p50 1.17 s, p95 1.38 s; $0.0012 |
+
 ## Earlier batches of 2026-11-04, kept for the record
 
 | File | What |

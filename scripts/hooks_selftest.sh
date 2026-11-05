@@ -36,7 +36,9 @@ git config user.email selftest@example.invalid
 git config user.name selftest
 git config commit.gpgsign false
 cp "$ROOT/.pre-commit-config.yaml" "$ROOT/.jac-warnings-baseline" .
-cp -r "$ROOT/scripts" "$ROOT/bench" .
+cp -r "$ROOT/scripts" .
+# Only the bench scripts: the findings log names bench canaries, and the .jac benches import core/.
+mkdir -p bench && cp "$ROOT"/bench/*.sh bench/
 cp -r "$ROOT/docs/jac-findings" docs/
 cp -r "$ROOT/tests/canaries" tests/
 printf '[project]\nname = "hooks-selftest"\nversion = "0.1.0"\n\n[apps.web]\nkind = "web-app"\nentry-point = "main"\n' > jac.toml
