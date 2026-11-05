@@ -31,6 +31,12 @@ Raw output of `bench/mem.jac`, one JSON file per batch, named `mem-<profile>-<ph
 | `stream-latency-20261105T1229Z.json` | 20 streamed answers on `claude-haiku-5-5`: first readable sentence cold 10.4 s, warm p50 1.16 s, p95 1.25 s; $0.0012 |
 | `stream-latency-20261105T1231Z.json` | The same run repeated (it started by mistake when another script imported the bench): warm p50 1.17 s, p95 1.38 s; $0.0012 |
 
+## Speech-to-text (plan 1.6, ADR 0004)
+
+| File | What |
+|---|---|
+| `stt-20261105T1739Z.json` | The owner's 154 s reading of `bench/stt/standup_script.txt`, streamed at real-time pace: Deepgram Nova-3 WER 12.5 %, 22/26 terms, final lag p50 0.50 s / p95 2.27 s; AssemblyAI WER 13.8 %, 22/26, 0.70 / 1.54 s; Vosk small WER 51.9 %, 2/26, 0.95 / 1.13 s; $0.031 of free credit. Text only, never audio |
+
 ## Earlier batches of 2026-11-04, kept for the record
 
 | File | What |
