@@ -257,7 +257,7 @@ test "the meeting stream and the microphone are captured separately" {
             time.sleep(2.0);
             others.stop();
             me.stop();
-            assert others.seconds_captured() > 1.0 and me.seconds_captured() > 1.0 , f"{others.seconds_captured()} {me.seconds_captured()}";
+            assert others.seconds_captured() > 1.0 and me.seconds_captured() > 1.0 , f"{others.seconds_captured()} {me.seconds_captured()}; others said {others.problems}, me said {me.problems}";
             assert heard["others"] == others.ring.total_bytes
                 and heard["me"] == me.ring.total_bytes;
             o = others.ring.snapshot();

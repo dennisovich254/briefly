@@ -167,8 +167,10 @@ obj Capture {
         listeners: list[Callable[[str, bytes], None]] = [],
         started_at: float = 0.0,
         first_audio_after: float = -1.0,
+        problems: list[str] = [],
         _process: subprocess.Popen[bytes] | None = None,
-        _reader: threading.Thread | None = None;
+        _reader: threading.Thread | None = None,
+        _errors: threading.Thread | None = None;
 
     def start {
         self._process = subprocess.Popen(
@@ -192,11 +194,13 @@ obj Capture {
                 "-"
             ],
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.PIPE
         );
         self.started_at = time.monotonic();
         self._reader = threading.Thread(target=self._read, daemon=True);
         self._reader.start();
+        self._errors = threading.Thread(target=self._read_errors, daemon=True);
+        self._errors.start();
     }
 
     def _read {
@@ -219,6 +223,21 @@ obj Capture {
         }
     }
 
+    """Keep the last lines the capture process reports, so a failing device can be explained."""
+    def _read_errors {
+        process = self._process;
+        if process is None or process.stderr is None {
+            return;
+        }
+        for raw in process.stderr {
+            line = raw.decode("utf-8", errors="replace").strip();
+            if line {
+                self.problems.append(line);
+                del self.problems[:-10];
+            }
+        }
+    }
+
     """Stop capturing; returns once the capture process has exited."""
     def stop {
         if self._process is not None {
@@ -234,6 +253,10 @@ obj Capture {
         if self._reader is not None {
             self._reader.join(timeout=5);
             self._reader = None;
+        }
+        if self._errors is not None {
+            self._errors.join(timeout=5);
+            self._errors = None;
         }
     }
 

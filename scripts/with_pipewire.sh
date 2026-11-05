@@ -12,6 +12,26 @@ runtime="$(mktemp -d -t briefly-pw-XXXXXX)"
 chmod 700 "$runtime"
 export XDG_RUNTIME_DIR="$runtime"
 unset PIPEWIRE_REMOTE PULSE_SERVER
+# No hardware: the private session must not open the machine's sound card or Bluetooth (CI has
+# none, and locally they belong to the user's own session). WirePlumber 0.5 reads the .conf,
+# 0.4 (Ubuntu 24.04, CI) the Lua file; each ignores the other.
+export XDG_CONFIG_HOME="$runtime/config"
+mkdir -p "$XDG_CONFIG_HOME/wireplumber/wireplumber.conf.d" "$XDG_CONFIG_HOME/wireplumber/main.lua.d" \
+    "$XDG_CONFIG_HOME/wireplumber/bluetooth.lua.d"
+cat >"$XDG_CONFIG_HOME/wireplumber/wireplumber.conf.d/90-no-hardware.conf" <<'CONF'
+wireplumber.profiles = {
+  main = {
+    monitor.alsa = disabled
+    monitor.alsa-midi = disabled
+    monitor.bluez = disabled
+    monitor.v4l2 = disabled
+    monitor.libcamera = disabled
+  }
+}
+CONF
+printf 'alsa_monitor.enabled = false\nv4l2_monitor.enabled = false\nlibcamera_monitor.enabled = false\n' \
+    >"$XDG_CONFIG_HOME/wireplumber/main.lua.d/90-no-hardware.lua"
+printf 'bluez_monitor.enabled = false\n' >"$XDG_CONFIG_HOME/wireplumber/bluetooth.lua.d/90-no-hardware.lua"
 pipewire >"$runtime/pipewire.log" 2>&1 &
 pw=$!
 wireplumber >"$runtime/wireplumber.log" 2>&1 &
