@@ -57,5 +57,6 @@ Sorted by severity (Blocker, Major, Minor, Cosmetic), then by ID.
 | [JD-029](JD-029-generator-ambient-undefined.md) | `jac check` accepts `Generator` without an import, but at run time it is undefined | Defect | Minor | open | import it from `typing` |
 | [JD-030](JD-030-no-host-event-emit.md) | The desktop bridge has `window.__jac.on`, but app code has no way to emit a host event | Missing capability | Minor | open | the authenticated response stream (SSE) |
 | [JD-033](JD-033-byllm-first-call-cold-start.md) | The first byLLM call in a process spends about 10 s loading litellm before any request | Performance/resource | Minor | open | warm it at server start (phase 4) |
+| [JD-034](JD-034-byllm-reports-zero-cost.md) | byLLM reports a cost of 0 for a model litellm cannot price, instead of leaving it unset | Defect | Minor | open | Briefly prices tokens itself |
 | [JD-015](JD-015-fmt-layout-quirks.md) | `jac fmt`: 9-space glob continuation, `assert x , msg`, one-line dict keeping its trailing comma, splits inside f-string braces | Defect | Cosmetic | open | none needed |
 | [JD-016](JD-016-build-output-markup.md) | `jac build` prints raw `[cyan]` markup and a `Run with: .//…` path into a temp directory | Defect | Cosmetic | open | none needed |

@@ -17,68 +17,23 @@ import os;
 import statistics;
 import sys;
 import time;
-import tomllib;
-import urllib.request;
 import core.ai.answer as answer;
+import from bench.llm_live { available_models, configured_model, load_key }
 import from jaclang.byllm.lib { MockLLM }
 
 glob ROOT: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
      QUESTION: str = "What did I work on yesterday?",
      EVIDENCE: str = "Commits by the developer yesterday: abc1234 Add notice expiry (src/notices.py); def5678 Rename notes to design (docs/design.md). PR #12 'Notice expiry' was merged by a reviewer at 16:40.",
-     # Conservative prices for the estimate when byLLM reports no cost (dollars per token).
-     IN_PRICE: float = 5.0 / 1000000,
-     OUT_PRICE: float = 25.0 / 1000000,
+     # Dollars per million tokens (input, output) for the estimate when byLLM reports no cost;
+     # any other model is estimated at the conservative fallback.
+     PRICES: dict[str, tuple[float, float]] = {"claude-haiku-5-5": (0.10, 0.50)},
+     FALLBACK_PRICE: tuple[float, float] = (5.0, 25.0),
      TARGET_P95_S: float = 4.0;
 
 def option(args: list[str], name: str, fallback: str) -> str {
     return args[args.index(name) + 1] if name in args else fallback;
 }
 
-def load_key -> bool {
-    if os.environ.get("ANTHROPIC_API_KEY") {
-        return True;
-    }
-    path = os.path.join(ROOT, ".env");
-    if os.path.exists(path) {
-        with open(path) as fh {
-            for line in fh {
-                if line.startswith("ANTHROPIC_API_KEY=") {
-                    os.environ["ANTHROPIC_API_KEY"] = line.split("=", 1)[1].strip();
-                }
-            }
-        }
-    }
-    return bool(os.environ.get("ANTHROPIC_API_KEY"));
-}
-
-def configured_model -> str {
-    with open(os.path.join(ROOT, "jac.toml"), "rb") as fh {
-        return str(
-            tomllib.load(fh).get("byllm", {}).get("model", {}).get("default_model", "")
-        );
-    }
-}
-
-"""The model IDs the key can use (a free request), or the error that made it fail."""
-def available_models -> tuple[list[str], str] {
-    request = urllib.request.Request(
-        "https://api.anthropic.com/v1/models?limit=100",
-        headers={
-            "x-api-key": os.environ["ANTHROPIC_API_KEY"],
-            "anthropic-version": "2023-06-01"
-        }
-    );
-    try {
-        with urllib.request.urlopen(request, timeout=20) as resp {
-            body = json.loads(resp.read());
-        }
-        return ([str(m["id"]) for m in body.get("data", [])], "");
-    } except urllib.error.HTTPError as e {
-        return ([], f"HTTP {e.code}");
-    } except Exception as e {
-        return ([], type(e).__name__);
-    }
-}
 
 obj Sample {
     has first_delta_s: float,
@@ -128,8 +83,10 @@ def one_answer(request_id: str) -> Sample {
     if first_sentence < 0 and text {
         first_sentence = total;
     }
-    if cost < 0 {
-        cost = prompt_tokens * IN_PRICE + completion_tokens * OUT_PRICE;
+    # byLLM reports a cost of 0 for a model litellm has no price for, so 0 with tokens is unknown too.
+    if cost < 0 or (cost == 0 and (prompt_tokens or completion_tokens)) {
+        (in_price, out_price) = PRICES.get(configured_model(), FALLBACK_PRICE);
+        cost = (prompt_tokens * in_price + completion_tokens * out_price) / 1000000;
     }
     return Sample(
         first_delta_s=round(first_delta, 3),
@@ -151,10 +108,11 @@ def main(args: list[str]) -> int {
     runs = int(option(args, "--runs", "20"));
     max_cost = float(option(args, "--max-cost", "0.05"));
     model = configured_model();
-    worst = runs * (1000 * IN_PRICE + answer.MAX_ANSWER_TOKENS * OUT_PRICE);
+    (in_price, out_price) = PRICES.get(model, FALLBACK_PRICE);
+    worst = runs * (1000 * in_price + answer.MAX_ANSWER_TOKENS * out_price) / 1000000;
     if "--plan" in args {
         print(
-            f"{runs} answers from {model}, each capped at {answer.MAX_ANSWER_TOKENS} output tokens; stops at ${max_cost:.2f} spent (every answer at the cap, at conservative prices, would be ${worst:.3f})"
+            f"{runs} answers from {model}, each capped at {answer.MAX_ANSWER_TOKENS} output tokens; stops at ${max_cost:.2f} spent (every answer at the cap would be ${worst:.4f})"
         );
         return 0;
     }
