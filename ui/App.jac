@@ -1,14 +1,17 @@
 """The Briefly UI root, shared by the desktop and lean profiles (architecture §6.1)."""
 
 import from core.app_info { AppInfo, app_info }
+import from core.app_opens { AppOpens, record_open }
 
 def:pub App(profile: str) -> JsxElement {
     has info: AppInfo | None = None,
+        opens: AppOpens | None = None,
         failed: bool = False;
 
     async can with entry {
         try {
             info = await app_info();
+            opens = await record_open();
         } except Exception {
             failed = True;
         }
@@ -23,5 +26,8 @@ def:pub App(profile: str) -> JsxElement {
                     {"Could not reach the Briefly server." if failed else "Starting…"}
                 </p>
             )}
+        {(<p>Opened {opens.count} times since {opens.first_opened}</p>)
+            if opens
+            else None}
     </main>
 }
