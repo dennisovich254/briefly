@@ -2,7 +2,7 @@
 
 | Document control | Value |
 |---|---|
-| Version | 0.3.2 — the clean install runs in a fresh container on GitHub Actions instead of a VM, which does not fit the 4 GB laptop (owner, 2026-11-04). 0.3.1 pinned Jac 0.39.0 as the phase 0 baseline (§3.2). 0.3 added the second purpose: a rigorous evaluation of Jac for desktop apps, with every shortcoming documented |
+| Version | 0.3.3 — pins Jac 0.39.1 (§3.2). 0.3.2: the clean install runs in a fresh container on GitHub Actions instead of a VM, which does not fit the 4 GB laptop (owner, 2026-11-04). 0.3.1 pinned Jac 0.39.0 as the phase 0 baseline (§3.2). 0.3 added the second purpose: a rigorous evaluation of Jac for desktop apps, with every shortcoming documented |
 | Product name | **Briefly**, an AI standup assistant; app identifier `briefly` |
 | Date | 2026-11-02 |
 | Product owner | Amon |
@@ -117,6 +117,8 @@ The architecture was drafted against **Jac 0.38.3** and its bundled `jac-essenti
 - **Inline Python (`::py::`) is removed** ([#10475](https://github.com/jaseci-labs/jaseci/pull/10475)). OS/SDK adapters (§6.3) are written as `.py` modules imported from Jac.
 - **JacPython** ([#10299](https://github.com/jaseci-labs/jaseci/pull/10299)) replaces CPython's C with a Jac port and reports about 1.4× (pyperformance) to 1.9× (microbenchmarks) slowdown against stock CPython. The binary's embedded runtime reports CPython 3.14.6 (`cpython-314` ABI). Spike S0 must establish whether server code runs on JacPython, and S1 must confirm that the C-extension packages the adapters need install and load on this ABI.
 - Fixes to stale prepared/compiled records ([#10425](https://github.com/jaseci-labs/jaseci/pull/10425), [#10426](https://github.com/jaseci-labs/jaseci/pull/10426)) may resolve the stale prepared cache note in §21.3; re-test it in S0.
+
+On 2026-11-05, between spikes S1a and S4, the pin moved to **Jac 0.39.1** (released 2026-11-04; the owner chose to upgrade before S4). The upgrade and what it changed are in `docs/jac-findings/reports/release-0.39.1.md`.
 
 Relevant findings:
 

@@ -11,7 +11,7 @@
 
 ## Behaviour
 
-The desktop app misses its idle memory budget: median **335.0 MB PSS** against 300 MB (five runs, range 328.5–336.0; 581 MB summed RSS; 227 MB USS). By process group: host 123 MB, WebKit 110 MB, **PostgreSQL 102 MB**. The app does not use the graph yet; the cluster starts anyway and holds two idle connections.
+The desktop app misses its idle memory budget: median **335.0 MB PSS** against 300 MB (five runs, range 328.5–336.0; 581 MB summed RSS; 227 MB USS). By process group: host 123 MB, WebKit 110 MB, **PostgreSQL 102 MB**. The app does not use the graph yet; the cluster starts anyway and holds two idle connections. On 0.39.1 the desktop is 353.2 MB (JD-027) and the settings are unchanged.
 
 Jac starts every embedded cluster, the desktop app's single-user one included, with `max_connections=256` and `max_pred_locks_per_transaction=1024` on the command line (constants `PG_MAX_CONNECTIONS` and `PG_MAX_PRED_LOCKS_PER_TXN` in `jaclang/data/pgembed.jac`), so the predicate-lock table is sized for 262,144 entries at start-up. Measured on a scratch cluster with the artifact's own PostgreSQL (idle, no connections):
 

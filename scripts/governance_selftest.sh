@@ -71,6 +71,9 @@ expect fail "rejects .env not being git-ignored"                   check "$repo"
 repo="$(fresh)"; sed -i 's/package-ecosystem: github-actions/package-ecosystem: npm/' "$repo/.github/dependabot.yml"
 expect fail "rejects a dependabot.yml that does not watch Actions" check "$repo"
 
+repo="$(fresh)"; printf '#!/usr/bin/env bash\n' > "$repo/bench/probe.sh"; git -C "$repo" add bench/probe.sh
+expect fail "rejects a shell script that is not executable in git" check "$repo"
+
 echo
 if (( failures > 0 )); then echo "$failures governance self-test(s) failed."; exit 1; fi
 echo "All governance self-tests passed."

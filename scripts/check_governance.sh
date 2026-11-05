@@ -53,6 +53,10 @@ else
     ok ".env.example has names only, no values"
 fi
 
+# Shell scripts are committed executable (a bench canary once landed without the bit and could not run).
+not_exec="$(git ls-files -s 'scripts/*.sh' 'bench/*.sh' | awk '$1 != "100755" {print $4}')"
+if [[ -z "$not_exec" ]]; then ok "every scripts/ and bench/ shell script is executable in git"; else miss "not executable in git: $(echo $not_exec)"; fi
+
 # Secrets and local-only files stay out of git.
 for f in .env .mcp.json .claude/x bench/private/x; do
     if git check-ignore -q --no-index "$f"; then ok "$f is git-ignored"; else miss "$f is NOT git-ignored"; fi
