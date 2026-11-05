@@ -57,9 +57,9 @@ def request(
         context = ssl.create_default_context();
         context.check_hostname = False;
         context.verify_mode = ssl.CERT_NONE;
-        conn = http.client.HTTPSConnection(host, port, timeout=30, context=context);
+        conn = http.client.HTTPSConnection(host, port, timeout=120, context=context);
     } else {
-        conn = http.client.HTTPConnection(host, port, timeout=30);
+        conn = http.client.HTTPConnection(host, port, timeout=120);
     }
     headers = {"Content-Type": "application/json"};
     if token {

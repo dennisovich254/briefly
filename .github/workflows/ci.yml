@@ -107,8 +107,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-jac
-      - name: Test suite (strict, canaries included)
-        run: scripts/test.sh
+      - name: PipeWire, for the audio capture tests (tests/audio/)
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends pipewire pipewire-bin wireplumber dbus-bin
+      - name: Test suite (strict, canaries included), inside a private PipeWire session
+        run: dbus-run-session -- scripts/with_pipewire.sh scripts/test.sh
 
   build-lean:
     name: build-lean

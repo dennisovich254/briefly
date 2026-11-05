@@ -226,11 +226,16 @@ Each spike writes its pass criteria (§17.1) as a test or `bench/` script first,
     - Fixed in Briefly: the lean server listened on `0.0.0.0` (now `127.0.0.1`), and with several workers a phone's requests reached workers without its session (now one worker); `scripts/smoke_lean.sh` checks both.
     - Findings: JD-035 (no session-scoped LAN listener; the desktop host is loopback-only), JD-036 (an omitted served-function argument arrives as the text of its default; upstream #10602), JD-037 (`jac check` ignores `.pyi` stubs), JD-038 (`jac run lean` puts the dev server on every interface).
   - **✓** [ADR 0003](adr/0003-phone-link.md) (A03): HTTPS is practical and the default; plain HTTP on the hotspot or a private network. The hotspot case and the certificate warning are re-checked in phase 4.
-- [ ] **1.6 S3: speech-to-text** (FR-07, §9.3, §9.6)
+- [x] **1.6 S3: speech-to-text** (FR-07, §9.3, §9.6)
   - **I:** Capture the meeting-output stream and the microphone as separate PipeWire streams; stream a recorded test call to two or three cloud services and one local small model; feed a vocabulary list. Confirm whether Claude's API accepts live audio.
-    - From 1.2: the §13 meeting-phase measurement: `jac run bench/mem.jac both --phase meeting --runs 5`, run by the owner during a real 15-minute call with Meet and VS Code open, after a reboot. `sounddevice` needs the system `libportaudio2`.
-  - **T:** `bench/stt_score.sh` scores a fixed, consented recording for question-critical entities and WER; capture tests confirm the two streams stay separate.
-  - **✓** ADR (A04, A12): default service, with latency, accuracy on names and code terms, retention terms and price recorded.
+  - **T:** `bench/stt_score.jac` scores a fixed, consented recording for question-critical entities and WER; capture tests confirm the two streams stay separate.
+  - **Results (2026-11-05, on 0.39.1):**
+    - Built: `core/audio/capture.jac` (sources from `pw-dump`; each captured by its own `pw-record` into a 30 s ring buffer, nothing on disk), `core/stt/` (one engine shape: Deepgram and AssemblyAI over WebSockets with the brief's vocabulary, Vosk locally), `bench/stt/record.jac` (the owner reads `bench/stt/standup_script.txt`), `bench/stt_score.jac` (real-time-paced scoring: WER, the 26 terms of `bench/stt/terms.txt`, lag, cost).
+    - Tests: `tests/audio/` (two tones stay in their own captures; the default microphone is found) run in CI inside a private PipeWire session (`scripts/with_pipewire.sh`); `tests/stt/` (both cloud protocols against fake services; the scorer).
+    - Claude's Messages API takes no audio input (text, image, document, search results and tool blocks only).
+    - On the owner's 154 s reading ($0.031 of free credit): Deepgram Nova-3 WER 12.5 %, 22/26 terms, final lag p50 0.50 s / p95 2.27 s; AssemblyAI WER 13.8 %, 22/26, 0.70 / 1.54 s; Vosk small WER 51.9 %, 2/26, 0.95 / 1.13 s (155 MB, twice real time).
+    - The §13 meeting-phase memory measurement moved to 5.2 (owner's decision): it is taken once capture and speech-to-text run together during a real call.
+  - **✓** [ADR 0004](adr/0004-speech-to-text.md) (A04, A12): Deepgram streaming by default (opted out of training on every request), AssemblyAI as the second option, no local model for live assistance on 4 GB (typed input instead), the speaker from the audio source.
 - [ ] **1.7 S5: screen reading** (FR-15, §9.4)
   - **I:** One frame through the XDG Screenshot portal on GNOME Wayland, downscaled, sent to Claude with a question.
   - **T:** a scripted run on saved frames of code and error text finds the smallest legible size.
@@ -328,9 +333,9 @@ Spike S2 (screen privacy) is covered by 4.7 for the phone companion; laptop-wind
   - **T:** every allowed transition, every invalid one refused; a successful network response never changes the privacy state; recovery after Stop requires an explicit resume.
   - **✓** Green.
 - [ ] **5.2 Audio capture with source tagging** (FR-07, §9.2, §9.6, §9.7)
-  - **I:** `adapters/pipewire.py`: meeting-output stream as "others", microphone as "me", device selector with scope disclosure, source meter and five-second test, a ~30 s in-memory ring buffer, no audio on disk.
+  - **I:** on `core/audio/capture.jac` (1.6): meeting-output stream as "others", microphone as "me", device selector with scope disclosure, source meter and five-second test, a ~30 s in-memory ring buffer, no audio on disk.
   - **T:** with recorded PCM fed through a fake source: streams stay separate; device removal pauses listening; no file is written during a session.
-  - **✓** Green; capture CPU and memory measured during a real call.
+  - **✓** Green; capture CPU and memory measured during a real call: `jac run bench/mem.jac both --phase meeting --runs 5`, run by the owner during a real 15-minute call with Meet and VS Code open, after a reboot (the §13 meeting-phase measurement, moved here from 1.6).
 - [ ] **5.3 Speech-to-text adapter** (§9.3, §9.7)
   - **I:** the service chosen in 1.6; stream opened at session start and closed on Pause/Stop; vocabulary from the brief; partial and final transcript revisions; lag over two seconds shown with a gap marker; an unreachable service offers the other option or typed input, never a silent switch.
   - **T:** a fake streaming service: revisions replace partials; a lag spike produces a gap marker; audio is never sent outside a session.

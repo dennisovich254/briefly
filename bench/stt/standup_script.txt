@@ -1,0 +1,25 @@
+# The fixed standup the owner reads for the speech-to-text spike (plan 1.6, S3; architecture §9.3).
+# One line per utterance; "others:" lines are the supervisor's questions, "me:" lines the answers.
+# Read every line aloud at a normal pace, pausing briefly between lines. The text after the colon is
+# the reference transcript; bench/stt/terms.txt lists the names and code terms that must come out right.
+
+others: Good morning. Let's start with you, Amon. What did you get done yesterday?
+me: Yesterday I merged the phone link. That was pull request seventeen, on the branch spike slash p one point five phone link.
+me: The phone pairs with a one time code from a QR code, and the laptop streams answers to it over server sent events.
+others: Did you run into any problems with Jac?
+me: Yes, four new findings. JD thirty five is the missing LAN listener, and JD thirty six is the default argument bug that turns false into a string.
+me: JD thirty six is already reported upstream as issue ten thousand six hundred and two.
+others: And the dev server? You said something about the network.
+me: Right. When you run jac run lean, Vite listens on every interface, so the whole API is exposed on the Wi-Fi. That one is JD thirty eight.
+others: What are you working on today?
+me: Today I am on sub-phase one point six, speech to text. I capture the meeting audio and the microphone as two separate PipeWire streams, with WirePlumber linking them.
+me: Then I compare Deepgram, AssemblyAI and a local Vosk model on this recording, scoring word error rate and the code terms.
+others: Which model answers the questions?
+me: Claude Haiku five point five, through byLLM. The first readable sentence arrives in about one point two seconds once it is warm.
+others: Any blockers?
+me: No blockers. I only need the API keys for Deepgram and AssemblyAI in the dot env file, and the meeting memory measurement during a real call.
+others: Is the desktop app under its memory budget?
+me: Not yet. The desktop idles at about three hundred and seventy megabytes against a budget of three hundred, mostly the embedded PostgreSQL. That is JD twenty four.
+others: Okay. Anything you need from the team?
+me: A review of ADR zero zero zero three on the phone link, and someone to try the pairing on an iPhone with Safari.
+others: Sounds good. Thanks, Amon.

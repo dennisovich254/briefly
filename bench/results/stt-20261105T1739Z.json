@@ -1,0 +1,86 @@
+{
+  "recording_seconds": 153.6,
+  "jac": "jac 0.39.1  (Linux x86_64)",
+  "engines": [
+    {
+      "engine": "vosk",
+      "error": "",
+      "word_error_rate": 0.5192,
+      "terms_right": 2,
+      "terms_total": 26,
+      "terms_missed": [
+        "Amon",
+        "Jac",
+        "JD-035",
+        "JD-036",
+        "JD-038",
+        "JD-024",
+        "pull request 17",
+        "QR code",
+        "LAN",
+        "Vite",
+        "Wi-Fi",
+        "PipeWire",
+        "WirePlumber",
+        "Deepgram",
+        "AssemblyAI",
+        "Vosk",
+        "Haiku",
+        "byLLM",
+        "PostgreSQL",
+        "API keys",
+        "ADR 0003",
+        "iPhone",
+        "Safari",
+        "server sent events"
+      ],
+      "final_lag_p50_s": 0.95,
+      "final_lag_p95_s": 1.13,
+      "utterances": 23,
+      "cost_usd": 0.0,
+      "rss_growth_mb": 197.7,
+      "wall_seconds": 155.5,
+      "transcript": "good morning and if that with you on what did you get done is the deep yesterday a mud the fondling that was pull requests seventeen on the bronx bikes lush be one point five funneling the phone pairs with a one time couldn't from a cure could have been up up steam us to eat over service centre events did you run into any problems with jack yes for new findings dt thirty five is the missing listener and he did that to six it the default argument bug that runs that turns falls into a string dd that six is already to put it up steam as issue ten thousand six hundred and two and the diff server you said something about the network right when you run tackling when you run jack rumbling foot listens on every interface so the whole a beer is exposed on the way fight that one is the did but eats what are you working on to date today i'm on some fits one point six speech to text i kept at the meeting or the and the microphone as two separate by boys teams with the web clumber linking them then i compared to program simply if i and local was founded on this recording scoring want edit it and they caught up what's more than answers the questions claude he go fight them fail through to them the first readable sentence arrives in about one point two seconds was it's on any blockers know blockers i only need a be a keys for the program and assembly a invaded and foot and a meeting memory measurement during a really cool if the desktop up and it's memory but it not it the desktop i do was at about three hundred and seventy megabytes against them by did have three hundred megabytes mostly the embedded was some chris good that is daddy twenty four okay anything in it from the to a review of india is it into a zero three on funding and someone to jay the bearing on an effort to fight sounds good thanks"
+    },
+    {
+      "engine": "deepgram",
+      "error": "",
+      "word_error_rate": 0.125,
+      "terms_right": 22,
+      "terms_total": 26,
+      "terms_missed": [
+        "JD-038",
+        "WirePlumber",
+        "Vosk",
+        "PostgreSQL"
+      ],
+      "final_lag_p50_s": 0.5,
+      "final_lag_p95_s": 2.27,
+      "utterances": 38,
+      "cost_usd": 0.023,
+      "rss_growth_mb": null,
+      "wall_seconds": 156.4,
+      "transcript": "Good morning. Let's start with you, Amon. What did you get done yesterday? Yesterday, I merged the phone link that was pull request 17 on the brand spike slash p 1.5 phone link. The phone pairs with a one time code from a QR code, and the laptop streams answers to each over. Server sent events. Did you run into any problems with Jac? Yes. Four new findings. JD 35 is the missing LAN listener. JD-thirty six is the default argument bug that runs turns... Falls into a string. JD-thirty six is already reported upstream as issue 10,602. And the dev server, you said something about the network. Right. When you run Jac Lin, when you run jack run lean, Vite listens on interface, so the whole API is exposed on the Wi Fi. That one is d d 38. What are you working on today? Today, I'm on sub phase 1.6, speech to text I capture the meeting audio and the microphone as two separate PipeWire streams with the wire clamber linking them. Then I compare Deepgram, AssemblyAI, and local model on this recording, scoring word error rate and the code terms. Which model answers the questions? Claude, Haiku 5.5 through byLLM. The first readable sentence arrives in about one point two seconds once it's warm. Any blockers no blockers. I only need the API keys for Deepgram and AssemblyAI in the n file and the meeting memory measurement during a real call. Is the desktop app under its memory budget? Not yet. The desktop idles at about 370 megabytes against a budget of 300 megabytes. Mostly, the embedded post GreSQL. That is JD. 24. Okay. Anything you need from the team? A review of ADR zero zero zero three on PhoneLink, and someone to try the pairing on an iPhone with Safari. Sounds good. Thanks. Amon."
+    },
+    {
+      "engine": "assemblyai",
+      "error": "",
+      "word_error_rate": 0.1378,
+      "terms_right": 22,
+      "terms_total": 26,
+      "terms_missed": [
+        "Jac",
+        "JD-038",
+        "WirePlumber",
+        "ADR 0003"
+      ],
+      "final_lag_p50_s": 0.7,
+      "final_lag_p95_s": 1.54,
+      "utterances": 31,
+      "cost_usd": 0.0081,
+      "rss_growth_mb": null,
+      "wall_seconds": 157.5,
+      "transcript": "Good morning. Let's start with your Amon. What did you get done yesterday? Yesterday I marked the phone link that was pull request 17. On the brand spike P1.5 phone link. The phone pairs with a one-time code from a QR code and the laptop streams answers to it over. Server sent events. Did you run into any problems with Jacques? Yes. Four new findings. JD-35 is the missing LAN listener and JD-36 is the default argument bug that turns falls into a string. JD-36 is already reported upstream as issue 10602. And the Deep server you said something about the network. Right when you run JacLin when you run J-RunLean. Vite listens on every interface so the whole API is exposed on the Wi-Fi. That one is the 38. What are you working on today? Today I'm on some phase 1.6 speech to text. I capture the meeting audio and the microphone as two separate PipeWire streams with Wire number linking them. Then I compare Deepgram AssemblyAI and local Vosk model on this recording scoring one error rate and the code terms. Which model answers the questions? Claude Haiku 5.5 through byLLM. The first readable sentence arrives in about 1.2 seconds once it's warm. Any blockers, no blockers. I only need the API keys for Deepgram and AssemblyAI in the.env file and the meeting memory measurement during a real call. Is the desktop app under its memory budget? Not yet. The desktop idols at about 370 megabytes against the budget of 300 megabytes. Mostly the embedded PostgreSQL. That is JD. 24. Okay. Anything you need from the team. A review of ADR 000. 3 on phone link and someone to try the pairing on an iPhone it's Safari. Sounds good. Thanks Amon."
+    }
+  ]
+}
