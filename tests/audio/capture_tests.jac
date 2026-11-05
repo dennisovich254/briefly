@@ -209,6 +209,13 @@ test "when the session reports a default source, it is the one found (read-only)
     assert mic is not None and mic.detail == reported , f"{reported!r} -> {mic}";
 }
 
+test "--raw is passed only to a pw-record that offers it" {
+    assert capture.offers_raw("  -a, --raw                             RAW mode\n");
+    assert not capture.offers_raw(
+        "  -P  --properties                      Set node properties\n"
+    );
+}
+
 test "the ring buffer keeps only the most recent audio" {
     ring = capture.RingBuffer(seconds=1);
     ring.append(b"\x01\x00" * capture.SAMPLE_RATE);

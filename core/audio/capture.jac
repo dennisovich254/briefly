@@ -27,6 +27,33 @@ obj AudioSource {
         detail: str = "";
 }
 
+glob _raw_offered: dict[str, bool] = {};
+
+"""Whether a `pw-record --help` text offers `--raw`."""
+def offers_raw(help_text: str) -> bool {
+    return "--raw" in help_text;
+}
+
+"""The flags that make `pw-record -` write bare PCM: `--raw` where it exists (PipeWire 1.6 writes an
+AU container to `-` without it), nothing on PipeWire 1.0 (Ubuntu 24.04), which writes bare PCM to
+`-` and rejects `--raw`. Asked once per process."""
+def raw_flags -> list[str] {
+    if "pw-record" not in _raw_offered {
+        text = "";
+        try {
+            done = subprocess.run(
+                ["pw-record", "--help"], capture_output=True, text=True, timeout=10
+            );
+            text = done.stdout + done.stderr;
+        } except (OSError, subprocess.TimeoutExpired) {
+            text = "";
+        }
+        _raw_offered["pw-record"] = offers_raw(text);
+    }
+    flags: list[str] = ["--raw"] if _raw_offered["pw-record"] else [];
+    return flags;
+}
+
 """PipeWire's objects (`pw-dump`); an empty list when PipeWire does not answer."""
 def pipewire_objects -> list[dict[str, object]] {
     try {
@@ -173,28 +200,27 @@ obj Capture {
         _errors: threading.Thread | None = None;
 
     def start {
+        args: list[str] = [
+            "pw-record",
+            "--target",
+            self.source.serial,
+            "--rate",
+            str(SAMPLE_RATE),
+            "--channels",
+            "1",
+            "--format",
+            "s16",
+            "--media-category",
+            "Capture",
+            "--properties",
+            "{ application.name=\"Briefly\" media.name=\"Briefly capture ("
+                + self.tag
+                + ")\" }"
+        ];
+        args.extend(raw_flags());
+        args.append("-");
         self._process = subprocess.Popen(
-            [
-                "pw-record",
-                "--target",
-                self.source.serial,
-                "--rate",
-                str(SAMPLE_RATE),
-                "--channels",
-                "1",
-                "--format",
-                "s16",
-                "--media-category",
-                "Capture",
-                "--properties",
-                "{ application.name=\"Briefly\" media.name=\"Briefly capture ("
-                    + self.tag
-                    + ")\" }",
-                "--raw",
-                "-"
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         );
         self.started_at = time.monotonic();
         self._reader = threading.Thread(target=self._read, daemon=True);
