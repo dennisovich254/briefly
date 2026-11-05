@@ -1,7 +1,7 @@
 """The phone link on a real phone (plan 1.5, spike S7; architecture §5.6). Run by the owner.
 
     jac install --dev                              # once: segno, for the QR code
-    jac run lean                                   # terminal 1 (or the desktop app: pass its --base)
+    jac build lean && jac run dist/briefly.jab     # terminal 1 (or the desktop app: pass its --base)
     jac run bench/phone_link.jac [--https] [--base http://127.0.0.1:8000]   # terminal 2
 
 Plays the laptop's side against the running app: signs in with a throwaway account, starts a phone
@@ -21,6 +21,8 @@ import sys;
 import time;
 import urllib.error;
 import urllib.request;
+
+glob START: str = "Stop it if it runs, then start the built app: jac build lean && jac run dist/briefly.jab";
 
 def post(
     base: str, path: str, body: dict[str, object], token: str = ""
@@ -60,11 +62,18 @@ def main -> int {
     if "--base" in args {
         base = args[args.index("--base") + 1].rstrip("/");
     }
+    # `jac run lean` is dev mode: Vite serves the page and the Jac server serves none, so the gate
+    # has no page to forward (and Vite is on every interface: JD-038). The built app is needed.
     try {
+        page = urllib.request.urlopen(base + "/", timeout=30).read();
         post(base, "/function/app_info", {});
     } except (OSError, RuntimeError) as e {
+        print(f"Briefly is not answering at {base} ({e}). {START}");
+        return 2;
+    }
+    if b"/@vite/client" in page {
         print(
-            f"Briefly is not answering at {base} ({e}). Start it first: jac run lean"
+            f"This is the dev server (jac run lean), which the phone link cannot use. {START}"
         );
         return 2;
     }

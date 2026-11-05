@@ -5,7 +5,7 @@
 - **Category / severity:** Missing capability / Major
 - **Capability:** Several clients of one app
 - **Status:** open
-- **Related:** architecture §5.6 (the LAN listener exists only during a session); upstream searched 2026-11-05: no matching issue
+- **Related:** architecture §5.6 (the LAN listener exists only during a session); JD-038 (dev mode is on every interface regardless); upstream searched 2026-11-05: no matching issue
 - **Cost:** 3 h; workaround: `core/phone/gate.jac` (about 250 lines), switch `BRIEFLY_PHONE_LISTENER`
 - **Canary:** bench/jd_035_desktop_serves_loopback_only.sh
 

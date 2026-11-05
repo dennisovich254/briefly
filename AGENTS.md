@@ -34,7 +34,7 @@ Use Jac's own way first for every concern (architecture §21.2). When it fails: 
 - `jac precommit <files>`: applies Jac's formatting and auto-fixable lint fixes, which the commit hook requires. Review its diff: it can move comments (JD-009).
 - `scripts/jac_lint.sh [files]`: lint that fails on any violation (`jac check --lint` exits 0 on them: JD-006).
 - `scripts/check_warnings.sh`: type-checks the apps and every tracked file (a bare `jac check` skips files no app imports: JD-005); 0 errors and warnings at or below `.jac-warnings-baseline`. Runs on pre-push.
-- `jac run lean` / `jac run desktop`: run a profile. `jac browse` QAs the UI.
+- `jac run lean` / `jac run desktop`: run a profile. `jac run lean` is dev mode, and its dev server is on every network interface whatever `[serve] host` says (JD-038): on a shared network, and for the phone link (`jac run bench/phone_link.jac`), run the built app instead: `jac build lean && jac run dist/briefly.jab`. `jac browse` QAs the UI.
 - `jac run scripts/check_findings.jac`: checks the findings log.
 - `jac run bench/mem.jac [desktop|lean|both]`: memory (PSS, RSS) and CPU per process group against the §13 budgets; writes `bench/results/` and fails on a miss. Build the artifact first. `bench/window_sdk.sh` checks the desktop window API.
 - `scripts/check_governance.sh`: checks the governance files, and that `.env.example` lists every variable the app reads (names only). Name the app's variables `BRIEFLY_*`.
