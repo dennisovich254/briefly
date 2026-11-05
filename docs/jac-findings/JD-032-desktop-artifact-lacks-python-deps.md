@@ -5,7 +5,7 @@
 - **Category / severity:** Packaging/install / Major
 - **Capability:** Build and packaging (`jac build`)
 - **Status:** open
-- **Related:** JD-026 (the artifact's undeclared system packages); 1.3's note on the launcher's `../../../venv` path; upstream searched 2026-11-05: no matching issue
+- **Related:** JD-026 (the artifact's undeclared system packages); 1.3's note on the launcher's `../../../venv` path; upstream: [jaseci-labs/jac#9947](https://github.com/jaseci-labs/jac/issues/9947) reports the same launcher path (closed 2026-10-21 by an inactivity bot, as not planned, with no fix); [#9528](https://github.com/jaseci-labs/jac/issues/9528) / [PR #9532](https://github.com/jaseci-labs/jac/pull/9532) (merged 2026-09-29) added Jac packages and `jac.lock`, but vendoring Python dependencies stays behind `--fat`, which the desktop build does not use
 - **Cost:** 1 h; workaround: ship the venv's `site-packages` in the artifact and set `JAC_DESKTOP_DEPS` (verified; +323 MB unless trimmed)
 - **Canary:** bench/jd_032_desktop_artifact_lacks_python_deps.sh
 
@@ -33,7 +33,7 @@ The desktop guide calls the output "**relocatable** … Ship the whole directory
 
 ## Analysis
 
-Every desktop app that uses byLLM, or any `[dependencies.pypi]` package, works on its developer's machine and fails once installed. For Briefly this blocks every Claude call in the shipped desktop profile until the workaround is in the build. The C-extension packages in the venv are built for the same `cpython-314` ABI the host embeds (S0), which is why copying them works.
+Every desktop app that uses byLLM, or any `[dependencies.pypi]` package, works on its developer's machine and fails once installed. For Briefly this blocks every Claude call in the shipped desktop profile until the workaround is in the build. Upstream #9947 traces the same cause in the compiler source: the release launcher exports `JAC_DESKTOP_DEPS` as a relative path back to the project's `.jac/venv`, and `--fat` (vendoring dependencies) is not wired into the desktop build. Our 0.39.1 reproduction confirms the issue still holds after its closure. The C-extension packages in the venv are built for the same `cpython-314` ABI the host embeds (S0), which is why copying them works.
 
 ## Workaround
 
@@ -45,8 +45,6 @@ Verified by hand: copy `.jac/venv/lib/python3.14/site-packages` into the artifac
 
 ## Upstream issue draft
 
-(For the owner to review before posting.)
+(For the owner to review before posting.) #9947 already reports this, so this is a comment on it asking to reopen, not a new issue.
 
-> **Desktop artifact doesn't bundle `[dependencies.pypi]` / byLLM provider packages; the launcher reaches into the project venv**
->
-> jac 0.39.1. With `[byllm.model]` declared, `.jac/venv` has litellm and friends (323 MB), but `jac build desktop`'s output contains none of them, and `<app>-launch.sh` adds `../../../venv/lib/python*/site-packages` to `JAC_DESKTOP_DEPS`. In the build tree a `by llm()` call works; the same directory copied elsewhere fails with `ModuleNotFoundError: litellm`. The guide says the directory is relocatable and to ship it whole. Copying the venv's site-packages beside the binary and setting `JAC_DESKTOP_DEPS` works. Suggest vendoring the app's Python dependencies into the artifact (as the embedded Postgres is) or documenting the step.
+> Still reproduces on jac 0.39.1, so please reopen. With `[byllm.model]` declared, `.jac/venv` holds litellm and its dependencies (323 MB), but `jac build desktop`'s output contains none of them, and `<app>-launch.sh` adds `../../../venv/lib/python*/site-packages` to `JAC_DESKTOP_DEPS`. In the build tree a `by llm()` call works; the same directory copied elsewhere fails with `ModuleNotFoundError: litellm` before any request. Copying the venv's site-packages beside the binary and setting `JAC_DESKTOP_DEPS` works, which suggests wiring `--fat` (or an equivalent vendoring step) into the desktop build.
